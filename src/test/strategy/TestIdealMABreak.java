@@ -17,8 +17,8 @@ public class TestIdealMABreak {
 	private static final Logger logger = LogManager.getLogger();
 	
 	public static void main(String[] args) {
-		CommonParam cp = ParamManager.getCommonParam("al", TIME_FRAME.MIN15, "20100101 000000", "20160101 170000");
-		Object[] pp = ParamManager.getParticularParam(IdealMABreakStrategy.class, 345, MA.MODE_SMMA, APPLIED_PRICE.PRICE_TYPICAL);
+		final CommonParam cp = ParamManager.getCommonParam("al", TIME_FRAME.MIN15, "20100101 000000", "20160101 170000");
+		final Object[] pp = ParamManager.getParticularParam(IdealMABreakStrategy.class, 345, MA.MODE_SMMA, APPLIED_PRICE.PRICE_TYPICAL);
 		
 		AbstractStrategyTester st = new tester.SimpleStrategyTester(cp.instrument, cp.tf, 100_0000.0f, 0.03f);
 		st.setTestDateRange((int) DateTimeHelper.Ldt2Long(cp.start_date), (int) DateTimeHelper.Ldt2Long(cp.end_date));

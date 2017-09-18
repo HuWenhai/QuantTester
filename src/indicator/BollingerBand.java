@@ -1,8 +1,9 @@
 package indicator;
 
 public class BollingerBand implements IIndicator {
+	@SuppressWarnings("unused")
 	private final int ExtBandsPeriod, ExtBandsShift;
-	private final double ExtBandsDeviations;
+	private final float ExtBandsDeviations;
 	private final IPriceSimplifier applied_price;
 	private int ExtPlotBegin = 0;
 
@@ -11,7 +12,7 @@ public class BollingerBand implements IIndicator {
 	float ExtBLBuffer[];
 	float ExtStdDevBuffer[];
 
-	public BollingerBand(int period, int shift, double deviations, IPriceSimplifier applied_price) {
+	public BollingerBand(int period, int shift, float deviations, IPriceSimplifier applied_price) {
 		if (period >= 2) {
 			this.ExtBandsPeriod = period;
 			this.ExtBandsShift = shift;
@@ -20,14 +21,14 @@ public class BollingerBand implements IIndicator {
 			// TODO Record error
 			this.ExtBandsPeriod = 20;
 			this.ExtBandsShift = 0;
-			this.ExtBandsDeviations = 2.0;
+			this.ExtBandsDeviations = 2.0f;
 		}
 		this.applied_price = applied_price;
 		this.ExtPlotBegin = ExtBandsPeriod - 1;
 	}
 
 	public BollingerBand() {
-		this(20, 0, 2.0, APPLIED_PRICE.PRICE_CLOSE);
+		this(20, 0, 2.0f, APPLIED_PRICE.PRICE_CLOSE);
 	}
 
 	@Override
@@ -94,9 +95,9 @@ public class BollingerBand implements IIndicator {
 			// --- calculate and write down StdDev
 			ExtStdDevBuffer[i] = StdDev_Func(i, price, ExtMLBuffer, ExtBandsPeriod);
 			// --- upper line
-			ExtTLBuffer[i] = (float) (ExtMLBuffer[i] + ExtBandsDeviations * ExtStdDevBuffer[i]);
+			ExtTLBuffer[i] = ExtMLBuffer[i] + ExtBandsDeviations * ExtStdDevBuffer[i];
 			// --- lower line
-			ExtBLBuffer[i] = (float) (ExtMLBuffer[i] - ExtBandsDeviations * ExtStdDevBuffer[i]);
+			ExtBLBuffer[i] = ExtMLBuffer[i] - ExtBandsDeviations * ExtStdDevBuffer[i];
 			// ---
 		}
 	}
