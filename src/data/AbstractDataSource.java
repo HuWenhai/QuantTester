@@ -24,7 +24,7 @@ public abstract class AbstractDataSource implements IDataSource {
 	// 郑州商品交易所
 	protected final static String ZZ[] = {"jr", "lr", "pm", "ri", "rs", "sf", "sm", "wh"};
 	// 郑州商品交易所 (夜盘)
-	protected final static String ZY[] = {"cf", "fg", "ma", "oi", "rm", "sr", "ta", "zc", "tc"};	// zc原来为tc
+	protected final static String ZY[] = {"cf", "cy", "fg", "ma", "oi", "rm", "sr", "ta", "zc", "tc"};	// zc原来为tc
 	// 中金所
 	protected final static String ZJ[] = {"ic", "if", "ih", "t",  "tf"};
 

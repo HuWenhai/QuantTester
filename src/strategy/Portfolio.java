@@ -117,7 +117,7 @@ public class Portfolio {
 				short_open_price = 0.0f;
 			}
 			cost(price * volume);
-			logger.info("CloseShort: price = {}, volume = {}, short_profit = ", price, volume, short_profit);
+			logger.info("CloseShort: price = {}, volume = {}, short_profit = {}", price, volume, short_profit);
 			return true;
 		} else {
 			return false;
