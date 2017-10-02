@@ -93,7 +93,7 @@ public class TickBarStrategy {
 			switch (Signal[i - 1]) {
 			case -1:
 				if (p_state >= 0) {
-					p.closeLong(Open[i], p.long_volume);
+					p.closeLong(Open[i], p.getLongVolume());
 					// p_state = 0;
 					p.openShort(Open[i], volume);
 					p_state = -1;
@@ -101,7 +101,7 @@ public class TickBarStrategy {
 				break;
 			case 1:
 				if (p_state <= 0) {
-					p.closeShort(Open[i], p.short_volume);
+					p.closeShort(Open[i], p.getShortVolume());
 					// p_state = 0;
 					p.openLong(Open[i], volume);
 					p_state = 1;
@@ -113,11 +113,11 @@ public class TickBarStrategy {
 			}
 		}
 		
-		if (p.long_volume > 0.0f) {
-			p.closeLong(Close[Close.length - 1], p.long_volume);
+		if (p.getLongVolume() > 0.0f) {
+			p.closeLong(Close[Close.length - 1], p.getLongVolume());
 		}
-		if (p.short_volume > 0.0f) {
-			p.closeShort(Close[Close.length - 1], p.short_volume);
+		if (p.getShortVolume() > 0.0f) {
+			p.closeShort(Close[Close.length - 1], p.getShortVolume());
 		}
 	}
 }
