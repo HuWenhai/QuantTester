@@ -45,7 +45,7 @@ public class Price_Channel implements IIndicator {
 	// +------------------------------------------------------------------+
 	// | get highest value for range |
 	// +------------------------------------------------------------------+
-	float Highest(float[] array, int range, int fromIndex) {
+	public static float Highest(float[] array, int range, int fromIndex) {
 		float res;
 		int i;
 		// ---
@@ -61,7 +61,7 @@ public class Price_Channel implements IIndicator {
 	// +------------------------------------------------------------------+
 	// | get lowest value for range |
 	// +------------------------------------------------------------------+
-	float Lowest(float[] array, int range, int fromIndex) {
+	public static float Lowest(float[] array, int range, int fromIndex) {
 		float res;
 		int i;
 		// ---

@@ -13,7 +13,7 @@ public class ChannelBreakStrategy extends BarBasedStrategy implements IEveryBar 
 
 	public ChannelBreakStrategy(Integer Period) {
 		this.period = Period;
-		this.priceChannel = new Price_Channel(Period);
+		this.priceChannel = new Price_Channel(period);
 		this.indicators.add(priceChannel);
 	}
 
