@@ -32,8 +32,13 @@ public class FractalChannelTrend extends BarBasedStrategy implements IEveryOHLC 
 
 	@Override
 	public float onOpen() {
-		// TODO Auto-generated method stub
-		return 0;
+		if (position < 0 && stopLoss > 0.0f && Open[current_index] > stopLoss) {
+			position = 0;
+		}
+		if (position > 0 && stopLoss > 0.0f && Open[current_index] < stopLoss) {
+			position = 0;
+		}
+		return Open[current_index];
 	}
 
 	@Override
@@ -56,7 +61,7 @@ public class FractalChannelTrend extends BarBasedStrategy implements IEveryOHLC 
 
 	@Override
 	public float onClose() {
-		if (current_index < (period + 1)) { // FIXME
+		if (current_index < (period + 1)) {
 			position = 0;
 			return Close[current_index];
 		} else if (Close[current_index] >= vU[current_index]) {

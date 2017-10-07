@@ -36,6 +36,7 @@ public abstract class AbstractStrategyTester implements Cloneable {
 		commission_ratio_table.put("cu", 0.000_065f + 0.000_30f);
 		commission_ratio_table.put("al", 0.000_080f + 0.000_50f); // 手续费固定3元
 		commission_ratio_table.put("rb", 0.000_130f + 0.000_60f);
+		commission_ratio_table.put("ru", 0.000_500f);
 
 		commission_ratio_table.put("i",  0.000_400f + 0.001_00f);
 		commission_ratio_table.put("c",  0.000_130f + 0.001_00f); // 手续费固定1.2元
@@ -47,6 +48,7 @@ public abstract class AbstractStrategyTester implements Cloneable {
 		commission_ratio_table.put("l",  0.000_090f + 0.001_00f); // 手续费固定2.0元
 		commission_ratio_table.put("v",  0.000_100f + 0.001_00f); // 手续费固定2.0元
 		commission_ratio_table.put("pp", 0.000_120f + 0.000_20f); // 手续费固定2.4元
+		commission_ratio_table.put("ta", 0.000_750f);
 	}
 
 	protected IDataSource datasource;
