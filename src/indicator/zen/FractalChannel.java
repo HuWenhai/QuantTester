@@ -2,6 +2,11 @@ package indicator.zen;
 
 import indicator.Price_Channel;
 
+/**
+ * 分型通道趋势策略
+ * @see http://ishare.iask.sina.com.cn/f/24444272.html
+ *
+ */
 public class FractalChannel extends Fractal {
 
 	int nL;
@@ -24,7 +29,7 @@ public class FractalChannel extends Fractal {
 	public void calculate(float[] open, float[] high, float[] low, float[] close) {
 		super.calculate(open, high, low, close);
 
-		int rates_total = close.length;
+		final int rates_total = close.length;
 		vH = new float[rates_total];
 		vL = new float[rates_total];
 		vU = new float[rates_total];

@@ -12,7 +12,7 @@ public class Fractal implements IIndicator {
 
 	@Override
 	public void calculate(float[] open, float[] high, float[] low, float[] close) {
-		int rates_total = close.length;
+		final int rates_total = close.length;
 		vf = new float[rates_total];
 		for (int i = 0; i < rates_total; i++) {
 			vf[i] = 0.0f;
