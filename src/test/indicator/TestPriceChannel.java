@@ -24,6 +24,10 @@ public final class TestPriceChannel {
 		float[] high_buffer = channel.getBufferById(0);
 		float[] low_buffer = channel.getBufferById(1);
 
-		new ChartDrawing().drawBars(ohlcv).drawBufferOnMain(high_buffer, period - 1).drawBufferOnMain(low_buffer, period - 1).actualDraw().writeToFile("price_channel.png");;
+		new ChartDrawing().drawBars(ohlcv)
+		.drawBufferOnMain(high_buffer, period - 1, true)
+		.drawBufferOnMain(low_buffer, period - 1, true)
+		.actualDraw()
+		.writeToFile("price_channel.png");
 	}
 }

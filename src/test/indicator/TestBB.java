@@ -25,10 +25,10 @@ public class TestBB {
 		float[] bl_buffer = bb.getBufferById(2);
 
 		new ChartDrawing().drawBars(ohlcv)
-		.drawBufferOnMain(ml_buffer, 0)
-		.drawBufferOnMain(tl_buffer, 0)
-		.drawBufferOnMain(bl_buffer, 0)
+		.drawBufferOnMain(ml_buffer, 20, true)
+		.drawBufferOnMain(tl_buffer, 20, true)
+		.drawBufferOnMain(bl_buffer, 20, true)
 		.actualDraw()
-		.writeToFile("bb.png");;
+		.writeToFile("bb.png");
 	}
 }

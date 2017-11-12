@@ -23,6 +23,9 @@ public final class TestRSI {
 		rsi.calculate(Open, High, Low, Close);
 		float[] rsi_buffer = rsi.getBufferById(0);
 
-		new ChartDrawing().drawBars(ohlcv).drawBufferOnSeparate(rsi_buffer, 0).actualDraw().writeToFile("rsi.png");;
+		new ChartDrawing().drawBars(ohlcv)
+		.drawBufferOnSeparate(rsi_buffer, 0, true)
+		.actualDraw()
+		.writeToFile("rsi.png");
 	}
 }

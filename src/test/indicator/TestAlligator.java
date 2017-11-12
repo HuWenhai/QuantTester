@@ -27,10 +27,10 @@ public class TestAlligator {
 		float[] lips = alligator.getBufferById(2);
 
 		new ChartDrawing().drawBars(ohlcv)
-		.drawBufferOnMain(jaws, 0, Color.BLUE)
-		.drawBufferOnMain(teeth, 0, Color.RED)
-		.drawBufferOnMain(lips, 0, Color.GREEN)
+		.drawBufferOnMain(jaws, 0, true, Color.BLUE)
+		.drawBufferOnMain(teeth, 0, true, Color.RED)
+		.drawBufferOnMain(lips, 0, true, Color.GREEN)
 		.actualDraw()
-		.writeToFile("alligator.png");;
+		.writeToFile("alligator.png");
 	}
 }

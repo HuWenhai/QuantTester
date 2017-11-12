@@ -23,7 +23,10 @@ public final class TestMACD {
 		float[] macd_main_buffer = macd.getBufferById(0);
 		float[] macd_signal_buffer = macd.getBufferById(1);
 
-		new ChartDrawing().drawBars(ohlcv).drawBufferOnSeparate(macd_main_buffer, 0)
-		.drawBufferOnSeparate(macd_signal_buffer, 0).actualDraw().writeToFile("macd.png");;
+		new ChartDrawing().drawBars(ohlcv)
+		.drawBufferOnSeparate(macd_main_buffer, 0, true)
+		.drawBufferOnSeparate(macd_signal_buffer, 0, true)
+		.actualDraw()
+		.writeToFile("macd.png");
 	}
 }

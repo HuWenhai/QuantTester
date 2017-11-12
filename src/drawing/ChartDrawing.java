@@ -51,7 +51,10 @@ public class ChartDrawing {
 	
 	protected List<Integer> main_begin_list = new ArrayList<>();
 	protected List<Integer> separate_begin_list = new ArrayList<>();
-
+	
+	protected List<Boolean> main_smooth_list = new ArrayList<>();
+	protected List<Boolean> separate_smooth_list = new ArrayList<>();
+	
 	protected BufferedImage main_image = null;
 	protected BufferedImage separate_image = null;
 	
@@ -72,30 +75,32 @@ public class ChartDrawing {
 		return this;
 	}
 	
-	public ChartDrawing drawBufferOnMain(float[] buffer, int begin, Color color) {
+	public ChartDrawing drawBufferOnMain(float[] buffer, int begin, boolean smooth, Color color) {
 		main_buffer_list.add(buffer);
 		main_begin_list.add(begin);
+		main_smooth_list.add(smooth);
 		main_color_list.add(color);
 		main_unused_colors.remove(color);
 		return this;
 	}
 
-	public ChartDrawing drawBufferOnMain(float[] buffer, int begin) {
+	public ChartDrawing drawBufferOnMain(float[] buffer, int begin, boolean smooth) {
 		Iterator<Color> ic = main_unused_colors.iterator();
-		return drawBufferOnMain(buffer, begin, ic.hasNext() ? ic.next() : Color.GRAY);
+		return drawBufferOnMain(buffer, begin, smooth, ic.hasNext() ? ic.next() : Color.GRAY);
 	}
 	
-	public ChartDrawing drawBufferOnSeparate(float[] buffer, int begin, Color color) {
+	public ChartDrawing drawBufferOnSeparate(float[] buffer, int begin, boolean smooth, Color color) {
 		separate_buffer_list.add(buffer);
 		separate_begin_list.add(begin);
+		separate_smooth_list.add(smooth);
 		separate_color_list.add(color);
 		separate_unused_colors.remove(color);
 		return this;
 	}
 	
-	public ChartDrawing drawBufferOnSeparate(float[] buffer, int begin) {
+	public ChartDrawing drawBufferOnSeparate(float[] buffer, int begin, boolean smooth) {
 		Iterator<Color> ic = separate_unused_colors.iterator();
-		return drawBufferOnSeparate(buffer, begin, ic.hasNext() ? ic.next() : Color.GRAY);
+		return drawBufferOnSeparate(buffer, begin, smooth, ic.hasNext() ? ic.next() : Color.GRAY);
 	}
 
 	public ChartDrawing actualDraw(int start, int end) {
@@ -115,14 +120,20 @@ public class ChartDrawing {
 		final float main_max = (float) main_dss.getMax();
 		final float main_min = (float) main_dss.getMin();
 		final float main_scale = (main_height * 0.99f) / (main_max - main_min);
-		main_image = new BufferedImage(end - start, main_height, BufferedImage.TYPE_INT_RGB);
-		for (int i = start; i < Math.min(end, close.length); i++) {
+		main_image = new BufferedImage((end - start) * 2, main_height, BufferedImage.TYPE_INT_RGB);
+		final int chartEnd = Math.min(end, close.length);
+		for (int i = start; i < chartEnd; i++) {
 			for (int j = (int) ((low[i] - main_min) * main_scale); j < (int) ((high[i] - main_min) * main_scale); j++)
-				main_image.setRGB(i, j, (close[i] > open[i]) ? Color.RED.getRGB() : Color.GREEN.getRGB());
+				main_image.setRGB(i * 2, j, (close[i] > open[i]) ? Color.RED.getRGB() : Color.GREEN.getRGB());
 			for (int j = 0; j < main_buffer_list.size(); j++) {
 				int begin = main_begin_list.get(j);
 				if (i >= begin) {
-					main_image.setRGB(i, (int) ((main_buffer_list.get(j)[i] - main_min) * main_scale), main_color_list.get(j).getRGB());
+					final int clr = main_color_list.get(j).getRGB();
+					main_image.setRGB(i * 2, (int) ((main_buffer_list.get(j)[i] - main_min) * main_scale), clr);
+					if (i < (chartEnd - 1) && main_smooth_list.get(j)) {
+						main_image.setRGB(i * 2 + 1,
+								(int) (((main_buffer_list.get(j)[i] + main_buffer_list.get(j)[i + 1]) / 2 - main_min) * main_scale), clr);
+					}
 				}
 			}
 		}
@@ -142,13 +153,19 @@ public class ChartDrawing {
 		final float separate_max = (float) separate_dss.getMax();
 		final float separate_min = (float) separate_dss.getMin();
 		final float separate_scale = (separate_height * 0.99f) / (separate_max - separate_min);
-		separate_image = new BufferedImage(end - start, separate_height, BufferedImage.TYPE_INT_RGB);
+		separate_image = new BufferedImage((end - start) * 2, separate_height, BufferedImage.TYPE_INT_RGB);
 		
-		for (int i = start; i < Math.min(end, close.length); i++) {
+		for (int i = start; i < chartEnd; i++) {
 			for (int j = 0; j < separate_buffer_list.size(); j++) {
 				int begin = separate_begin_list.get(j);
-				if (i >= begin)
-					separate_image.setRGB(i, (int) ((separate_buffer_list.get(j)[i] - separate_min) * separate_scale), separate_color_list.get(j).getRGB());
+				if (i >= begin) {
+					final int clr = separate_color_list.get(j).getRGB();
+					separate_image.setRGB(i * 2, (int) ((separate_buffer_list.get(j)[i] - separate_min) * separate_scale), clr);
+					if (i < (chartEnd - 1) && separate_smooth_list.get(j)) {
+						separate_image.setRGB(i * 2 + 1,
+								(int) (((separate_buffer_list.get(j)[i] + separate_buffer_list.get(j)[i + 1]) / 2 - separate_min) * separate_scale), clr);
+					}
+				}
 			}
 		}
 		return this;
