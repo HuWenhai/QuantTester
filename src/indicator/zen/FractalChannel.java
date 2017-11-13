@@ -1,5 +1,6 @@
 package indicator.zen;
 
+import indicator.IIndicator;
 import indicator.Price_Channel;
 
 /**
@@ -7,9 +8,11 @@ import indicator.Price_Channel;
  * @see http://ishare.iask.sina.com.cn/f/24444272.html
  *
  */
-public class FractalChannel extends Fractal {
+public class FractalChannel implements IIndicator {
 
 	int nL;
+
+	protected float[] vf = null;
 
 	protected float[] vH;
 	protected float[] vL;
@@ -27,9 +30,24 @@ public class FractalChannel extends Fractal {
 
 	@Override
 	public void calculate(float[] open, float[] high, float[] low, float[] close) {
-		super.calculate(open, high, low, close);
-
 		final int rates_total = close.length;
+
+		vf = new float[rates_total];
+		for (int i = 0; i < rates_total; i++) {
+			vf[i] = 0.0f;
+		}
+		if (rates_total < 3) {
+			return;
+		}
+
+		for (int i = 1; i < rates_total - 1; i++) {
+			if (high[i] > high[i + 1] && high[i] > high[i - 1] && low[i] > low[i + 1] && low[i] > low[i - 1]) {
+				vf[i] = 1.0f;
+			} else if (high[i] < high[i + 1] && high[i] < high[i - 1] && low[i] < low[i + 1] && low[i] < low[i - 1]) {
+				vf[i] = - 1.0f;
+			}
+		}
+
 		vH = new float[rates_total];
 		vL = new float[rates_total];
 		vU = new float[rates_total];
