@@ -1,14 +1,16 @@
 package indicator.zen;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.stream.Collectors;
 
 public class Stroke extends Fractal {
 
 	private final boolean strict;
 	private final float gapRatio;
 	protected List<Integer> strokeList = null;
+	protected List<Float> strokeBufferList = null;
 	protected float[] strokeBuffer = null;
 
 	public Stroke(boolean strict, float gapRatio) {
@@ -64,7 +66,11 @@ public class Stroke extends Fractal {
 		for (int i = 0; i < rates_total; i++) {
 			strokeBuffer[i] = Float.NEGATIVE_INFINITY;
 		}
-		if (rates_total < 6) {
+		strokeList = new ArrayList<>();
+		strokeBufferList = new ArrayList<>();
+
+		final int adjustedKLineLen = adjustedKLines.size();
+		if (adjustedKLineLen < 4) {
 			return;
 		}
 
@@ -89,8 +95,8 @@ public class Stroke extends Fractal {
 			}
 		}
 
-		strokeList = new LinkedList<>();
 		strokeList.add(confirmedEP.originalOrdinal);
+		float firstFailFractal = Float.NEGATIVE_INFINITY;
 		while (iterator.hasNext()) {
 			HighLowKLine nextFractal = iterator.next();
 			while (nextFractal.fractal == 0 && iterator.hasNext()) {
@@ -98,12 +104,12 @@ public class Stroke extends Fractal {
 			}
 			int nextFractalIndex = iterator.nextIndex();
 			if (unconfirmedEP.fractal == nextFractal.fractal) {
-				if (nextFractal.fractal == 1 && nextFractal.high > unconfirmedEP.high) {
+				boolean foundHigher = (nextFractal.fractal == 1 && nextFractal.high > unconfirmedEP.high);
+				boolean foundLower = (nextFractal.fractal == -1 && nextFractal.low < unconfirmedEP.low);
+				if (foundHigher || foundLower) {
 					unconfirmedEP = nextFractal;
 					unconfirmedIndex = nextFractalIndex;
-				} else if (nextFractal.fractal == -1 && nextFractal.low < unconfirmedEP.low) {
-					unconfirmedEP = nextFractal;
-					unconfirmedIndex = nextFractalIndex;
+					firstFailFractal = Float.NEGATIVE_INFINITY;
 				}
 			} else {
 				final int kLineCount = nextFractalIndex - unconfirmedIndex + 1;
@@ -114,16 +120,30 @@ public class Stroke extends Fractal {
 					gapStroke = checkGap(nextFractal.fractal, unconfirmedEP.originalOrdinal, nextFractal.originalOrdinal, high, low);
 				}
 				if (strictMode || unstrictMode || gapStroke) {
-					confirmedEP = unconfirmedEP;
-					unconfirmedEP = nextFractal;
-					unconfirmedIndex = nextFractalIndex;
-					strokeList.add(confirmedEP.originalOrdinal);
+					if ((firstFailFractal == Float.NEGATIVE_INFINITY) || (firstFailFractal != Float.NEGATIVE_INFINITY && 
+							((nextFractal.fractal == 1 && nextFractal.high > firstFailFractal) || 
+								(nextFractal.fractal == -1 && nextFractal.low < firstFailFractal)))) {
+							confirmedEP = unconfirmedEP;
+							unconfirmedEP = nextFractal;
+							unconfirmedIndex = nextFractalIndex;
+							strokeList.add(confirmedEP.originalOrdinal);
+							firstFailFractal = Float.NEGATIVE_INFINITY;
+					}
+				} else if (firstFailFractal == Float.NEGATIVE_INFINITY && kLineCount == 4 && strict) {
+					// Do nothing
+				} else if (firstFailFractal == Float.NEGATIVE_INFINITY && kLineCount < 4 && strict) {
+					firstFailFractal = (nextFractal.fractal == 1) ? nextFractal.high : nextFractal.low;
 				}
 			}
 		}
 
-		for (Integer ordinal : strokeList) {
-			strokeBuffer[ordinal] = (upperBuffer[ordinal] == Float.NEGATIVE_INFINITY) ? lowerBuffer[ordinal] : upperBuffer[ordinal];
+		strokeBufferList = strokeList.stream()
+				.map((ordinal) -> { return ((upperBuffer[ordinal] == Float.NEGATIVE_INFINITY) ? lowerBuffer[ordinal] : upperBuffer[ordinal]);} )
+				.collect(Collectors.toList());
+
+		final int srokeBufferListSize = strokeBufferList.size();
+		for (int i = 0; i < srokeBufferListSize; i++) {
+			strokeBuffer[strokeList.get(i)] = strokeBufferList.get(i);
 		}
 	}
 

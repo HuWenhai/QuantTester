@@ -3,27 +3,44 @@ package helper;
 import java.lang.reflect.Field;
 
 public final class ReflectHelper {
-	public final static Object getPrivateField(final Object obj, final String field_name) {
+	private final static Field getFieldIncludingSuper(Class<?> objCls, final String field_name) {
 		Field field = null;
+		for (Class<?> cls = objCls; cls != null; cls = cls.getSuperclass()) {
+			try {
+				field = cls.getDeclaredField(field_name);
+			} catch (Exception e) {
+				field = null;
+			}
+			if (field != null) {
+				break;
+			}
+		}
+		return field;
+	}
+
+	public final static Object getPrivateField(final Object obj, final String field_name) {
+		Field field = getFieldIncludingSuper(obj.getClass(), field_name);
 		Object field_obj = null;
-		try {
-			field = obj.getClass().getDeclaredField(field_name);
+		if (field != null) {
 			field.setAccessible(true);
-			field_obj = field.get(obj);
-		} catch (Exception e) {
-			return null;
+			try {
+				field_obj = field.get(obj);
+			} catch (IllegalArgumentException | IllegalAccessException e) {
+				e.printStackTrace();
+			}
 		}
 		return field_obj;
 	}
 
 	public final static void setPrivateField(final Object obj, final String field_name, final Object value) {
-		Field field = null;
-		try {
-			field = obj.getClass().getDeclaredField(field_name);
+		Field field = getFieldIncludingSuper(obj.getClass(), field_name);
+		if (field != null) {
 			field.setAccessible(true);
-			field.set(obj, value);
-		} catch (Exception e) {
-			return;
+			try {
+				field.set(obj, value);
+			} catch (IllegalArgumentException | IllegalAccessException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 }
