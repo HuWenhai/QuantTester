@@ -8,6 +8,7 @@ import data.TIME_FRAME;
 import data.foxtrade.KTExportStocks;
 import data.struct.BarSeries;
 import drawing.ChartDrawing;
+import helper.ReflectHelper;
 import indicator.IIndicator;
 import indicator.zen.Stroke;
 
@@ -24,8 +25,8 @@ public class TestStroke {
 
 		IIndicator stroke = new Stroke();
 		stroke.calculate(Open, High, Low, Close);
-		List<Integer> strokeList = (List<Integer>) helper.ReflectHelper.getPrivateField(stroke, "strokeList");
-		List<Float> strokeBufferList = (List<Float>) helper.ReflectHelper.getPrivateField(stroke, "strokeBufferList");
+		List<Integer> strokeList = (List<Integer>) ReflectHelper.getPrivateField(stroke, "strokeList");
+		List<Float> strokeBufferList = (List<Float>) ReflectHelper.getPrivateField(stroke, "strokeBufferList");
 
 		new ChartDrawing().drawBars(ohlcv)
 		.drawLinesOnMain(strokeList, strokeBufferList, Color.YELLOW)

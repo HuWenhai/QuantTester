@@ -105,6 +105,27 @@ public class ChartDrawing {
 		return this;
 	}
 	
+	public ChartDrawing drawRectangleOnMain(int x1, int x2, float y1, float y2, Color color) {
+		List<Integer> xList = new ArrayList<>();
+		List<Float> yList = new ArrayList<>();
+		// Bottom left
+		xList.add(x1);
+		yList.add(y1);
+		// Bottom right
+		xList.add(x2);
+		yList.add(y1);
+		// Top right
+		xList.add(x2);
+		yList.add(y2);
+		// Top left
+		xList.add(x1);
+		yList.add(y2);
+		// Bottom left
+		xList.add(x1);
+		yList.add(y1);
+		return drawLinesOnMain(xList, yList, color);
+	}
+	
 	public ChartDrawing drawBufferOnSeparate(float[] buffer, int begin, boolean smooth, Color color) {
 		separate_buffer_list.add(buffer);
 		separate_begin_list.add(begin);
@@ -120,15 +141,16 @@ public class ChartDrawing {
 	}
 
 	public ChartDrawing actualDraw(int start, int end) {
+		final int chartEnd = Math.min(end, close.length);
 		DoubleSummaryStatistics main_dss = new DoubleSummaryStatistics();
-		DoubleSummaryStatistics high_dss = StreamHelper.getFloatSummaryStatistics(Arrays.copyOfRange(high, start, end));
-		DoubleSummaryStatistics low_dss  = StreamHelper.getFloatSummaryStatistics(Arrays.copyOfRange(low , start, end));
+		DoubleSummaryStatistics high_dss = StreamHelper.getFloatSummaryStatistics(Arrays.copyOfRange(high, start, chartEnd));
+		DoubleSummaryStatistics low_dss  = StreamHelper.getFloatSummaryStatistics(Arrays.copyOfRange(low , start, chartEnd));
 		main_dss.combine(high_dss);
 		main_dss.combine(low_dss);
 		
 		for (int i = 0; i < main_buffer_list.size(); i++) {
 			int indicator_begin = main_begin_list.get(i);
-			float[] indicator_value = Arrays.copyOfRange(main_buffer_list.get(i), Math.max(indicator_begin, start), end);
+			float[] indicator_value = Arrays.copyOfRange(main_buffer_list.get(i), Math.max(indicator_begin, start), chartEnd);
 			DoubleSummaryStatistics indicator_dss = StreamHelper.getFloatSummaryStatistics(indicator_value);
 			main_dss.combine(indicator_dss);
 		}
@@ -136,7 +158,6 @@ public class ChartDrawing {
 		final float main_max = (float) main_dss.getMax();
 		final float main_min = (float) main_dss.getMin();
 		final float main_scale = (main_height * 0.99f) / (main_max - main_min);
-		final int chartEnd = Math.min(end, close.length);
 		main_image = new BufferedImage((chartEnd - start) * 2, main_height, BufferedImage.TYPE_INT_RGB);
 		for (int i = start; i < chartEnd; i++) {
 			for (int j = (int) ((low[i] - main_min) * main_scale); j < (int) ((high[i] - main_min) * main_scale); j++)
@@ -174,6 +195,14 @@ public class ChartDrawing {
 				if (Math.abs(dx) > Math.abs(dy)) {
 					// Draw along x
 					float tg = ((float)dy) / ((float)dx);
+					if (x1 > x2) {
+						int swap = y1;
+						y1 = y2;
+						y2 = swap;
+						swap = x1;
+						x1 = x2;
+						x2 = swap;
+					}
 					for (int xidx = x1; xidx <= x2; xidx ++) {
 						main_image.setRGB(xidx, (int) ((xidx - x1) * tg) + y1, clr);
 					}

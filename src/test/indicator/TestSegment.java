@@ -9,6 +9,7 @@ import data.TIME_FRAME;
 import data.foxtrade.KTExportStocks;
 import data.struct.BarSeries;
 import drawing.ChartDrawing;
+import helper.ReflectHelper;
 import indicator.IIndicator;
 import indicator.zen.Segment;
 
@@ -25,10 +26,10 @@ public class TestSegment {
 
 		IIndicator segment = new Segment();
 		segment.calculate(Open, High, Low, Close);
-		List<Integer> strokeList = (List<Integer>) helper.ReflectHelper.getPrivateField(segment, "strokeList");
-		List<Float> strokeBufferList = (List<Float>) helper.ReflectHelper.getPrivateField(segment, "strokeBufferList");
-		List<Integer> segmentList = (List<Integer>) helper.ReflectHelper.getPrivateField(segment, "segmentList");
-		List<Float> segmentBufferList = (List<Float>) helper.ReflectHelper.getPrivateField(segment, "segmentBufferList");
+		List<Integer> strokeList = (List<Integer>) ReflectHelper.getPrivateField(segment, "strokeList");
+		List<Float> strokeBufferList = (List<Float>) ReflectHelper.getPrivateField(segment, "strokeBufferList");
+		List<Integer> segmentList = (List<Integer>) ReflectHelper.getPrivateField(segment, "segmentList");
+		List<Float> segmentBufferList = (List<Float>) ReflectHelper.getPrivateField(segment, "segmentBufferList");
 
 		List<Integer> segmentList2 = new ArrayList<>();
 		final int segmentListSize = segmentList.size();
