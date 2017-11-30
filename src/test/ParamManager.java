@@ -79,13 +79,17 @@ public class ParamManager {
 	public static Object[] getParticularParam(Class<?> cls, Object ... default_params) {
 		Constructor<?>[] ctors = cls.getConstructors();
 		final int ctorCount = ctors.length;
-		int[] paramLen = new int[ctorCount];
-		for (int i = 0; i < ctorCount; i++) {
-			paramLen[i] = ctors[i].getParameterCount();
+		int matchIdx = 0;
+		for (; matchIdx < ctorCount; matchIdx++) {
+			if (default_params.length == ctors[matchIdx].getParameterCount()) {
+				// TODO parameter types should also match
+				break;
+			}
 		}
-		int maxIdx = helper.MathHelper.MaxIndex(paramLen);
-		Constructor<?> completeCtor = ctors[maxIdx];
-		Class<?>[] paramTypes = completeCtor.getParameterTypes();
+		if (matchIdx == ctorCount) {
+			return null;
+		}
+		Class<?>[] paramTypes = ctors[matchIdx].getParameterTypes();
 		
 		final int paramCount = paramTypes.length;
 		Object[] params = new Object[paramCount];
