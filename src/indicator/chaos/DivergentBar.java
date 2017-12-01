@@ -16,13 +16,13 @@ public class DivergentBar implements IIndicator {
 			bullishDivergent[i] = false;
 			bearishDivergent[i] = false;
 		}
-		if (rates_total < 2) {
+		if (rates_total < 3) {
 			return;
 		}
-		for (int i = 1; i < rates_total; i++) {
-			if ((high[i] > high[i - 1]) && (close[i] < ((high[i] + low[i]) / 2.0f))) {
+		for (int i = 2; i < rates_total; i++) {
+			if ((high[i] > high[i - 1]) && (high[i] > high[i - 2]) && (close[i] < ((high[i] + low[i]) / 2.0f))) {
 				bearishDivergent[i] = true;
-			} else if ((low[i] < low[i - 1]) && (close[i] > ((high[i] + low[i]) / 2.0f))) {
+			} else if ((low[i] < low[i - 1]) && (low[i] < low[i - 2]) && (close[i] > ((high[i] + low[i]) / 2.0f))) {
 				bullishDivergent[i] = true;
 			}
 		}
