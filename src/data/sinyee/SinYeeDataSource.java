@@ -9,8 +9,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -19,11 +21,12 @@ import java.util.function.Predicate;
 import data.AbstractDataSource;
 import data.ITickDataSource;
 import data.TIME_FRAME;
+import data.struct.DetailedTick;
 import data.struct.FutureBar;
 import data.struct.FutureBarSeries;
 import data.struct.Tick;
 import global.Config;
-import data.struct.DetailedTick;
+import helper.FileHelper;
 import helper.MathHelper;
 
 public class SinYeeDataSource extends AbstractDataSource implements ITickDataSource {
@@ -100,8 +103,17 @@ public class SinYeeDataSource extends AbstractDataSource implements ITickDataSou
 		String contract_month_str = contract_name.substring(contract_name_len - 2, contract_name_len);
 		return Integer.valueOf(contract_month_str);
 	}
-	
-	public SinYeeDataSource(String instrument_name, Set<? extends TIME_FRAME> time_frames_set, Predicate<String> contract_filter) {
+
+	public SinYeeDataSource(String instrument_name, Set<TIME_FRAME> input_tf_set, Predicate<String> contract_filter) {
+		Set<TIME_FRAME> time_frames_set = new HashSet<>();
+		if (Config.UseCompondBars) {
+			time_frames_set.add(TIME_FRAME.MIN1);
+			if (input_tf_set.contains(TIME_FRAME.DAY)) {
+				time_frames_set.add(TIME_FRAME.DAY);
+			}
+		} else {
+			time_frames_set.addAll(input_tf_set);
+		}
 		List<Integer> id_list = new ArrayList<>();
 		for (TIME_FRAME time_frame : time_frames_set) {
 			if (time_frame == TIME_FRAME.TICK) {
@@ -117,7 +129,7 @@ public class SinYeeDataSource extends AbstractDataSource implements ITickDataSou
 		Arrays.sort(idarray);
 		
 		String folder = Config.SinYeeDataDir + getPrefix(instrument_name) + instrument_name.toUpperCase();
-		List<Path> pathlist = listSourceFiles(Paths.get(folder), "*.bar");
+		List<Path> pathlist = FileHelper.listSourceFiles(Paths.get(folder), "*.bar");
 		
 		Map<String, List<FutureBar>[]> contract_data_map = new HashMap<>();
 		
@@ -196,12 +208,29 @@ public class SinYeeDataSource extends AbstractDataSource implements ITickDataSou
 				multi_time_frame_bars_list[contract_month].get(time_frame).addAll(barlist);
 			}
 		}
-		
+
 		for (int i = 0; i < 13; i++) {
 			for (TIME_FRAME time_frame : time_frames_set) {
 				List<FutureBar> barlist = multi_time_frame_bars_list[i].get(time_frame);
 				FutureBarSeries bar_series = new FutureBarSeries(barlist);
 				multi_time_frame_bars[i].put(time_frame, bar_series);
+			}
+		}
+
+		if (Config.UseCompondBars) {
+			Set<TIME_FRAME> compose_time_frames_set = new HashSet<>(input_tf_set);
+			for (TIME_FRAME tf : input_tf_set) {
+				compose_time_frames_set.add(tf.composedFrom);
+			}
+			compose_time_frames_set.remove(null);
+			compose_time_frames_set.removeIf(tf -> tf.ordinal() <= TIME_FRAME.MIN1.ordinal());
+			compose_time_frames_set.removeIf(tf -> tf.ordinal() >= TIME_FRAME.DAY.ordinal());
+			List<TIME_FRAME> composed_time_frames_list = new ArrayList<>(compose_time_frames_set);
+			composed_time_frames_list.sort(Comparator.comparing(tf -> tf.ordinal()));
+			for (int i = 0; i < 13; i++) {
+				for (TIME_FRAME time_frame : composed_time_frames_list) {
+					generateFromLowerLevelBars(i, time_frame);
+				}
 			}
 		}
 	}
@@ -218,7 +247,7 @@ public class SinYeeDataSource extends AbstractDataSource implements ITickDataSou
 	
 	private void loadTicks(String instrument_name, Predicate<String> contract_filter) {
 		String folder = Config.SinYeeDataDir + getPrefix(instrument_name) + instrument_name.toUpperCase();
-		List<Path> pathlist = listSourceFiles(Paths.get(folder), "*.tick");
+		List<Path> pathlist = FileHelper.listSourceFiles(Paths.get(folder), "*.tick");
 
 		all_tick_list = new ArrayList<>();
 		

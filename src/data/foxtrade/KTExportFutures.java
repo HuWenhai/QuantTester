@@ -4,10 +4,13 @@ import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.IntStream;
 
 import data.ITickDataSource;
 import data.TIME_FRAME;
@@ -16,6 +19,7 @@ import data.struct.FutureBar;
 import data.struct.FutureBarSeries;
 import data.struct.Tick;
 import global.Config;
+import helper.FileHelper;
 
 @SuppressWarnings("unchecked")
 public class KTExportFutures extends AbstractKTExport implements ITickDataSource {
@@ -77,32 +81,63 @@ public class KTExportFutures extends AbstractKTExport implements ITickDataSource
 		return daily_tick_ohlcv;
 	}
 
-	public KTExportFutures(String instrument_name, Set<? extends TIME_FRAME> time_frames_set) {
-		for (int month = 0; month < 13; month++) {
-			for (TIME_FRAME time_frame : time_frames_set) {
+	private void loadSpecificMonthAndTimeFrame(String instrument_name, int[] months, Set<TIME_FRAME> input_tf_set) {
+		Set<TIME_FRAME> load_time_frames_set = new HashSet<>();
+		if (Config.UseCompondBars) {
+			load_time_frames_set.add(TIME_FRAME.MIN1);
+			load_time_frames_set.add(TIME_FRAME.MIN5);
+			if (input_tf_set.contains(TIME_FRAME.DAY)) {
+				load_time_frames_set.add(TIME_FRAME.DAY);
+			}
+		} else {
+			load_time_frames_set.addAll(input_tf_set);
+		}
+		for (int month : months) {
+			for (TIME_FRAME time_frame : load_time_frames_set) {
 				KTExport_3p(instrument_name, month, time_frame);
 			}
 		}
+		if (Config.UseCompondBars) {
+			Set<TIME_FRAME> compose_time_frames_set = new HashSet<>(input_tf_set);
+			for (TIME_FRAME tf : input_tf_set) {
+				compose_time_frames_set.add(tf.composedFrom);
+			}
+			compose_time_frames_set.remove(null);
+			compose_time_frames_set.removeIf(tf -> tf.ordinal() <= TIME_FRAME.MIN1.ordinal());
+			compose_time_frames_set.remove(TIME_FRAME.MIN5);
+			compose_time_frames_set.removeIf(tf -> tf.ordinal() >= TIME_FRAME.DAY.ordinal());
+			List<TIME_FRAME> composed_time_frames_list = new ArrayList<>(compose_time_frames_set);
+			composed_time_frames_list.sort(Comparator.comparing(tf -> tf.ordinal()));
+			for (int month : months) {
+				for (TIME_FRAME time_frame : composed_time_frames_list) {
+					generateFromLowerLevelBars(month, time_frame);
+				}
+			}
+		}
+	}
+
+	public KTExportFutures(String instrument_name, Set<TIME_FRAME> input_tf_set) {
+		loadSpecificMonthAndTimeFrame(instrument_name, IntStream.range(0, 13).toArray(), input_tf_set);
 	}
 
 	public KTExportFutures(String instrument_name) {
-		for (int month = 0; month < 13; month++) {
-			for (TIME_FRAME time_frame : KT_TIME_FRAMES) {
-				if (time_frame != TIME_FRAME.TICK)
-					KTExport_3p(instrument_name, month, time_frame);
-			}
-		}
+		Set<TIME_FRAME> time_frame_set = new HashSet<>();
+		time_frame_set.addAll(KT_TIME_FRAMES);
+		time_frame_set.remove(TIME_FRAME.TICK);
+		loadSpecificMonthAndTimeFrame(instrument_name, IntStream.range(0, 13).toArray(), time_frame_set);
 	}
 
 	public KTExportFutures(String instrument_name, int month) {
-		for (TIME_FRAME time_frame : KT_TIME_FRAMES) {
-			if (time_frame != TIME_FRAME.TICK)
-				KTExport_3p(instrument_name, month, time_frame);
-		}
+		Set<TIME_FRAME> time_frame_set = new HashSet<>();
+		time_frame_set.addAll(KT_TIME_FRAMES);
+		time_frame_set.remove(TIME_FRAME.TICK);
+		loadSpecificMonthAndTimeFrame(instrument_name, new int[]{month}, time_frame_set);
 	}
 
 	public KTExportFutures(String instrument_name, int month, TIME_FRAME time_frame) {
-		KTExport_3p(instrument_name, month, time_frame);
+		Set<TIME_FRAME> time_frame_set = new HashSet<>();
+		time_frame_set.add(time_frame);
+		loadSpecificMonthAndTimeFrame(instrument_name, new int[]{month}, time_frame_set);
 	}
 
 	protected void KTExport_3p(String instrument_name, int month, TIME_FRAME time_frame) {
@@ -110,7 +145,7 @@ public class KTExportFutures extends AbstractKTExport implements ITickDataSource
 		String[] input_files = null;
 
 		if (time_frame == TIME_FRAME.TICK) {
-			List<Path> paths = listSourceFiles(Paths.get(file_path), "*.*");
+			List<Path> paths = FileHelper.listSourceFiles(Paths.get(file_path), "*.*");
 			if (paths.size() <= 0) {
 				return;
 			}

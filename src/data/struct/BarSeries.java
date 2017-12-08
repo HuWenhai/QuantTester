@@ -4,14 +4,25 @@ import java.util.Iterator;
 import java.util.List;
 
 public class BarSeries implements Iterable<Bar> {
-	protected final int array_size;
-	public int times[];
-	public float opens[];
-	public float highs[];
-	public float lows[];
-	public float closes[];
-	public float volumes[];
-	public float amounts[];
+	public final int array_size;
+	public final int times[];
+	public final float opens[];
+	public final float highs[];
+	public final float lows[];
+	public final float closes[];
+	public final float volumes[];
+	public final float amounts[];
+
+	public BarSeries(int size) {
+		this.array_size = size;
+		this.times = new int[array_size];
+		this.opens = new float[array_size];
+		this.highs = new float[array_size];
+		this.lows = new float[array_size];
+		this.closes = new float[array_size];
+		this.volumes = new float[array_size];
+		this.amounts = new float[array_size];
+	}
 
 	public BarSeries(List<? extends Bar> bars) {
 		if (bars == null || bars.isEmpty()) {
