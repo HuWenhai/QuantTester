@@ -1,5 +1,12 @@
 package indicator;
 
+import java.awt.Color;
+import java.util.ArrayList;
+import java.util.List;
+
+import indicator.IndicatorBuffer.DrawingStyle;
+import indicator.IndicatorBuffer.DrawingType;
+
 public class Stochastic implements IIndicator {
 
 	private final int InpKPeriod;
@@ -111,4 +118,18 @@ public class Stochastic implements IIndicator {
 		}
 	}
 
+	@Override
+	public int minimumBarsToWork() {
+		return Math.max(InpKPeriod + InpSlowing - 2, InpKPeriod + InpDPeriod);
+	}
+
+	@Override
+	public List<IndicatorBuffer> getIndicatorBuffers() {
+		List<IndicatorBuffer> buffers = new ArrayList<>();
+		buffers.add(new IndicatorBuffer("Main", DrawingType.SeparateChart, DrawingStyle.Line, Color.WHITE, ExtMainBuffer, InpKPeriod + InpSlowing - 2));
+		buffers.add(new IndicatorBuffer("Signal", DrawingType.SeparateChart, DrawingStyle.Line, Color.YELLOW, ExtSignalBuffer, InpKPeriod + InpDPeriod));
+		buffers.add(new IndicatorBuffer("Highest", ExtHighesBuffer));
+		buffers.add(new IndicatorBuffer("Lowest", ExtLowesBuffer));
+		return buffers;
+	}
 }

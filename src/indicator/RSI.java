@@ -1,5 +1,12 @@
 package indicator;
 
+import java.awt.Color;
+import java.util.ArrayList;
+import java.util.List;
+
+import indicator.IndicatorBuffer.DrawingStyle;
+import indicator.IndicatorBuffer.DrawingType;
+
 public class RSI implements IIndicator {
 
 	private final int ExtPeriodRSI;
@@ -104,5 +111,19 @@ public class RSI implements IIndicator {
 		default:
 			return null;
 		}
+	}
+
+	@Override
+	public int minimumBarsToWork() {
+		return ExtPeriodRSI + 1;
+	}
+
+	@Override
+	public List<IndicatorBuffer> getIndicatorBuffers() {
+		List<IndicatorBuffer> buffers = new ArrayList<>();
+		buffers.add(new IndicatorBuffer("RSI", DrawingType.SeparateChart, DrawingStyle.Line, Color.BLUE, ExtRSIBuffer, ExtPeriodRSI));
+		buffers.add(new IndicatorBuffer("Pos", ExtPosBuffer));
+		buffers.add(new IndicatorBuffer("Neg", ExtNegBuffer));
+		return buffers;
 	}
 }

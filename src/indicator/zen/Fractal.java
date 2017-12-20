@@ -1,10 +1,12 @@
 package indicator.zen;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
 import indicator.IIndicator;
+import indicator.IndicatorBuffer;
 
 public class Fractal implements IIndicator {
 
@@ -123,5 +125,18 @@ public class Fractal implements IIndicator {
 		default:
 			return null;
 		}
+	}
+
+	@Override
+	public int minimumBarsToWork() {
+		return 1;
+	}
+
+	@Override
+	public List<IndicatorBuffer> getIndicatorBuffers() {
+		List<IndicatorBuffer> buffers = new ArrayList<>();
+		buffers.add(new IndicatorBuffer("upper", upperBuffer));
+		buffers.add(new IndicatorBuffer("lower", lowerBuffer));
+		return buffers;
 	}
 }

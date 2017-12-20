@@ -1,6 +1,9 @@
 package indicator.chaos;
 
+import java.util.List;
+
 import indicator.IIndicator;
+import indicator.IndicatorBuffer;
 
 public class DivergentBar implements IIndicator {
 
@@ -30,6 +33,16 @@ public class DivergentBar implements IIndicator {
 
 	@Override
 	public float[] getBufferById(int id) {
+		return null;
+	}
+
+	@Override
+	public int minimumBarsToWork() {
+		return 3;
+	}
+
+	@Override
+	public List<IndicatorBuffer> getIndicatorBuffers() {
 		return null;
 	}
 }

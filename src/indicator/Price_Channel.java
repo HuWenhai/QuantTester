@@ -1,5 +1,12 @@
 package indicator;
 
+import java.awt.Color;
+import java.util.ArrayList;
+import java.util.List;
+
+import indicator.IndicatorBuffer.DrawingStyle;
+import indicator.IndicatorBuffer.DrawingType;
+
 public class Price_Channel implements IIndicator {
 
 	private final int InpChannelPeriod;
@@ -86,5 +93,19 @@ public class Price_Channel implements IIndicator {
 		default:
 			return null;
 		}
+	}
+
+	@Override
+	public int minimumBarsToWork() {
+		return InpChannelPeriod + 1;
+	}
+
+	@Override
+	public List<IndicatorBuffer> getIndicatorBuffers() {
+		List<IndicatorBuffer> buffers = new ArrayList<>();
+		buffers.add(new IndicatorBuffer("High", DrawingType.MainChart, DrawingStyle.Line, Color.CYAN, ExtHighBuffer, InpChannelPeriod));
+		buffers.add(new IndicatorBuffer("Low", DrawingType.MainChart, DrawingStyle.Line, Color.CYAN, ExtLowBuffer, InpChannelPeriod));
+		buffers.add(new IndicatorBuffer("Midd", DrawingType.MainChart, DrawingStyle.Line, Color.BLUE, ExtMiddBuffer, InpChannelPeriod));
+		return buffers;
 	}
 }

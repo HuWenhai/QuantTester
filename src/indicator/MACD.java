@@ -1,5 +1,12 @@
 package indicator;
 
+import java.awt.Color;
+import java.util.ArrayList;
+import java.util.List;
+
+import indicator.IndicatorBuffer.DrawingStyle;
+import indicator.IndicatorBuffer.DrawingType;
+
 public class MACD implements IIndicator {
 
 	private final int InpFastEMA;
@@ -72,4 +79,18 @@ public class MACD implements IIndicator {
 		}
 	}
 
+	@Override
+	public int minimumBarsToWork() {
+		return InpSignalSMA - 1;
+	}
+
+	@Override
+	public List<IndicatorBuffer> getIndicatorBuffers() {
+		List<IndicatorBuffer> buffers = new ArrayList<>();
+		buffers.add(new IndicatorBuffer("Macd", DrawingType.SeparateChart, DrawingStyle.Bar, Color.WHITE, ExtMacdBuffer, InpSignalSMA - 1));
+		buffers.add(new IndicatorBuffer("Signal", DrawingType.SeparateChart, DrawingStyle.Line, Color.RED, ExtSignalBuffer, InpSignalSMA - 1));
+		buffers.add(new IndicatorBuffer("FastMa", ExtFastMaBuffer));
+		buffers.add(new IndicatorBuffer("SlowMa", ExtSlowMaBuffer));
+		return buffers;
+	}
 }

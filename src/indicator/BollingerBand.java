@@ -1,5 +1,12 @@
 package indicator;
 
+import java.awt.Color;
+import java.util.ArrayList;
+import java.util.List;
+
+import indicator.IndicatorBuffer.DrawingStyle;
+import indicator.IndicatorBuffer.DrawingType;
+
 public class BollingerBand implements IIndicator {
 	@SuppressWarnings("unused")
 	private final int ExtBandsPeriod, ExtBandsShift;
@@ -116,5 +123,19 @@ public class BollingerBand implements IIndicator {
 		default:
 			return null;
 		}
+	}
+
+	@Override
+	public int minimumBarsToWork() {
+		return ExtBandsPeriod;
+	}
+
+	@Override
+	public List<IndicatorBuffer> getIndicatorBuffers() {
+		List<IndicatorBuffer> buffers = new ArrayList<>();
+		buffers.add(new IndicatorBuffer("ML", DrawingType.MainChart, DrawingStyle.Line, Color.WHITE, ExtMLBuffer, ExtBandsPeriod - 1));
+		buffers.add(new IndicatorBuffer("TL", DrawingType.MainChart, DrawingStyle.Line, Color.YELLOW, ExtTLBuffer, ExtBandsPeriod - 1));
+		buffers.add(new IndicatorBuffer("BL", DrawingType.MainChart, DrawingStyle.Line, Color.MAGENTA, ExtBLBuffer, ExtBandsPeriod - 1));
+		return buffers;
 	}
 }

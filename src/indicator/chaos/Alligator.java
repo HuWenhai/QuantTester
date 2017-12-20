@@ -1,8 +1,15 @@
 package indicator.chaos;
 
+import java.awt.Color;
+import java.util.ArrayList;
+import java.util.List;
+
 import indicator.APPLIED_PRICE;
 import indicator.IIndicator;
+import indicator.IndicatorBuffer;
 import indicator.MA;
+import indicator.IndicatorBuffer.DrawingStyle;
+import indicator.IndicatorBuffer.DrawingType;
 
 public class Alligator implements IIndicator {
 
@@ -84,4 +91,17 @@ public class Alligator implements IIndicator {
 		}
 	}
 
+	@Override
+	public int minimumBarsToWork() {
+		return Math.max(Math.max(jawsPeriod + jawsShift, teethPeriod + teethShift), lipsPeriod + lipsShift);
+	}
+
+	@Override
+	public List<IndicatorBuffer> getIndicatorBuffers() {
+		List<IndicatorBuffer> buffers = new ArrayList<>();
+		buffers.add(new IndicatorBuffer("Jaws", DrawingType.MainChart, DrawingStyle.Line, Color.GREEN, jaws, jawsPeriod + jawsShift - 1));
+		buffers.add(new IndicatorBuffer("Teeth", DrawingType.MainChart, DrawingStyle.Line, Color.RED, teeth, teethPeriod + teethShift - 1));
+		buffers.add(new IndicatorBuffer("Lips", DrawingType.MainChart, DrawingStyle.Line, Color.BLUE, lips, lipsPeriod + lipsShift - 1));
+		return buffers;
+	}
 }

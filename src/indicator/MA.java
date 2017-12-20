@@ -1,5 +1,12 @@
 package indicator;
 
+import java.awt.Color;
+import java.util.ArrayList;
+import java.util.List;
+
+import indicator.IndicatorBuffer.DrawingStyle;
+import indicator.IndicatorBuffer.DrawingType;
+
 public class MA implements IIndicatorOnIndicator {
 
 	@FunctionalInterface
@@ -195,5 +202,17 @@ public class MA implements IIndicatorOnIndicator {
 		for (int i = 0; i < (InpMAPeriod + begin); i++) {
 			ExtLineBuffer[i] = 0.0f;
 		}
+	}
+
+	@Override
+	public int minimumBarsToWork() {
+		return InpMAPeriod;
+	}
+
+	@Override
+	public List<IndicatorBuffer> getIndicatorBuffers() {
+		List<IndicatorBuffer> buffers = new ArrayList<>();
+		buffers.add(new IndicatorBuffer("Line", DrawingType.MainChart, DrawingStyle.Line, Color.RED, ExtLineBuffer, InpMAPeriod - 1));
+		return buffers;
 	}
 }

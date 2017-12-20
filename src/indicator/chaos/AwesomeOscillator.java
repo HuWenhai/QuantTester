@@ -1,8 +1,15 @@
 package indicator.chaos;
 
+import java.awt.Color;
+import java.util.ArrayList;
+import java.util.List;
+
 import indicator.APPLIED_PRICE;
 import indicator.IIndicator;
+import indicator.IndicatorBuffer;
 import indicator.MA;
+import indicator.IndicatorBuffer.DrawingStyle;
+import indicator.IndicatorBuffer.DrawingType;
 
 public class AwesomeOscillator implements IIndicator {
 
@@ -56,5 +63,28 @@ public class AwesomeOscillator implements IIndicator {
 		default:
 			return null;
 		}
+	}
+
+	@Override
+	public int minimumBarsToWork() {
+		return Math.max(fastPeriod, slowPeriod);
+	}
+
+	@Override
+	public List<IndicatorBuffer> getIndicatorBuffers() {
+		List<IndicatorBuffer> buffers = new ArrayList<>();
+		buffers.add(new IndicatorBuffer("AO", DrawingType.SeparateChart, DrawingStyle.Bar, null, aoBuffer, slowPeriod - 1) {
+			@Override
+			public Color getColor(int index) {
+				if (index == 0 || buffer[index] > buffer[index - 1]) {
+					return Color.GREEN;
+				} else {
+					return Color.RED;
+				}
+			}
+		});
+		buffers.add(new IndicatorBuffer("FastMA", fastMABuffer));
+		buffers.add(new IndicatorBuffer("SlowMA", slowMABuffer));
+		return buffers;
 	}
 }

@@ -1,5 +1,12 @@
 package indicator;
 
+import java.awt.Color;
+import java.util.ArrayList;
+import java.util.List;
+
+import indicator.IndicatorBuffer.DrawingStyle;
+import indicator.IndicatorBuffer.DrawingType;
+
 public class CCI implements IIndicator {
 
 	private final int ExtCCIPeriod;
@@ -101,5 +108,20 @@ public class CCI implements IIndicator {
 		default:
 			return null;
 		}
+	}
+
+	@Override
+	public int minimumBarsToWork() {
+		return ExtCCIPeriod;
+	}
+
+	@Override
+	public List<IndicatorBuffer> getIndicatorBuffers() {
+		List<IndicatorBuffer> buffers = new ArrayList<>();
+		buffers.add(new IndicatorBuffer("RSI", DrawingType.SeparateChart, DrawingStyle.Line, Color.CYAN, ExtCCIBuffer, ExtCCIPeriod - 1));
+		buffers.add(new IndicatorBuffer("D", ExtDBuffer));
+		buffers.add(new IndicatorBuffer("M", ExtMBuffer));
+		buffers.add(new IndicatorBuffer("SP", ExtMBuffer));
+		return buffers;
 	}
 }

@@ -1,7 +1,14 @@
 package indicator.zen;
 
+import java.awt.Color;
+import java.util.ArrayList;
+import java.util.List;
+
 import indicator.IIndicator;
+import indicator.IndicatorBuffer;
 import indicator.Price_Channel;
+import indicator.IndicatorBuffer.DrawingStyle;
+import indicator.IndicatorBuffer.DrawingType;
 
 /**
  * 分型通道趋势策略
@@ -100,5 +107,21 @@ public class FractalChannel implements IIndicator {
 		default:
 			return null;
 		}
+	}
+
+	@Override
+	public int minimumBarsToWork() {
+		return nL;
+	}
+
+	@Override
+	public List<IndicatorBuffer> getIndicatorBuffers() {
+		List<IndicatorBuffer> buffers = new ArrayList<>();
+		buffers.add(new IndicatorBuffer("vf", vf));
+		buffers.add(new IndicatorBuffer("vH", vH));
+		buffers.add(new IndicatorBuffer("vL", vL));
+		buffers.add(new IndicatorBuffer("vU", DrawingType.MainChart, DrawingStyle.Line, Color.YELLOW, vU, 2 + nL - 1));
+		buffers.add(new IndicatorBuffer("vB", DrawingType.MainChart, DrawingStyle.Line, Color.MAGENTA, vB, 2 + nL - 1));
+		return buffers;
 	}
 }

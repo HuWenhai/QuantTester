@@ -1,6 +1,12 @@
 package indicator;
 
+import java.awt.Color;
+import java.util.ArrayList;
+import java.util.List;
+
 import helper.Mql5Compatible;
+import indicator.IndicatorBuffer.DrawingStyle;
+import indicator.IndicatorBuffer.DrawingType;
 
 public class ParabolicSAR implements IIndicator, Mql5Compatible {
 
@@ -154,4 +160,17 @@ public class ParabolicSAR implements IIndicator, Mql5Compatible {
 		}
 	}
 
+	@Override
+	public int minimumBarsToWork() {
+		return 1;
+	}
+
+	@Override
+	public List<IndicatorBuffer> getIndicatorBuffers() {
+		List<IndicatorBuffer> buffers = new ArrayList<>();
+		buffers.add(new IndicatorBuffer("SAR", DrawingType.MainChart, DrawingStyle.Dot, Color.ORANGE, ExtSARBuffer, 0));
+		buffers.add(new IndicatorBuffer("EP", ExtEPBuffer));
+		buffers.add(new IndicatorBuffer("AF", ExtAFBuffer));
+		return buffers;
+	}
 }
