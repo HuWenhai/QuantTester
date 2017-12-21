@@ -101,7 +101,7 @@ public class LimitStrategyTester extends RealStrategyTester {
 					} else {
 						strategies[current_trading_month_id].setIndexByTime(adjusted_daily_open_time[i - c_backword_days - force_switch_counter]);
 					}
-					strategies[current_trading_month_id].resetPosition();
+					strategies[current_trading_month_id].reset();
 					strategies[current_trading_month_id].calcUntil((price, position) -> {}, adjusted_daily_open_time[i]);
 					controlled_trader.allow_open = true;
 					force_switch_counter = 0;

@@ -11,13 +11,14 @@ import trade.ITradeable;
 public abstract class BarBasedStrategy implements IStrategy, Cloneable {
 
 	protected int position = 0;
+	protected int minimumBarsToWork = 1;
 
 	@Override
 	public final int getPosition() {
 		return position;
 	}
 
-	public final void resetPosition() {
+	public void reset() {
 		position = 0;
 	}
 
@@ -47,8 +48,10 @@ public abstract class BarBasedStrategy implements IStrategy, Cloneable {
 
 	protected void calculateIndicators() {
 		for (IIndicator ind : indicators) {
-			if (ind != null)
+			if (ind != null) {
 				ind.calculate(Open, High, Low, Close);
+				minimumBarsToWork = Math.max(minimumBarsToWork, ind.minimumBarsToWork());
+			}
 		}
 	}
 

@@ -4,9 +4,10 @@ import indicator.APPLIED_PRICE;
 import indicator.BollingerBand;
 import indicator.chaos.Alligator;
 import indicator.chaos.DivergentBar;
-import strategy.template.TrailingStop;
+import strategy.template.EnterSignal;
+import strategy.template.ReverseWithTrailingStop;
 
-public class AlligatorDivergent extends TrailingStop {
+public class AlligatorDivergent extends ReverseWithTrailingStop {
 
 	private final float stdDevThreshold;
 
@@ -19,18 +20,19 @@ public class AlligatorDivergent extends TrailingStop {
 	private float[] lips = null;
 	private boolean[] bullishDivergent = null;
 	private boolean[] bearishDivergent = null;
+	private float[] bbTop = null;
+	private float[] bbBottom = null;
 	private float[] stdDev = null;
 
-	public AlligatorDivergent(Float AFstep, Float AFmax, Integer BBPeriod, Integer BBShift, Float stdDevThreshold) {
+	public AlligatorDivergent(Float AFstep, Float AFmax, Integer BBPeriod, Float BBDeviations, Float stdDevThreshold) {
 		super(AFstep, AFmax);
 		this.stdDevThreshold = stdDevThreshold;
 		this.alligator = new Alligator();
 		this.divergentBar = new DivergentBar();
-		this.bb = new BollingerBand(BBPeriod, BBShift, 2.0f, APPLIED_PRICE.PRICE_CLOSE);
+		this.bb = new BollingerBand(BBPeriod, 0, BBDeviations, APPLIED_PRICE.PRICE_CLOSE);
 		this.indicators.add(alligator);
 		this.indicators.add(divergentBar);
 		this.indicators.add(bb);
-		reset();
 	}
 
 	public AlligatorDivergent(Float stdDevThreshold) {
@@ -42,7 +44,6 @@ public class AlligatorDivergent extends TrailingStop {
 		this.indicators.add(alligator);
 		this.indicators.add(divergentBar);
 		this.indicators.add(bb);
-		reset();
 	}
 
 	public AlligatorDivergent() {
@@ -57,17 +58,13 @@ public class AlligatorDivergent extends TrailingStop {
 		lips = alligator.getBufferById(2);
 		bullishDivergent = divergentBar.bullishDivergent;
 		bearishDivergent = divergentBar.bearishDivergent;
+		bbTop = bb.getBufferById(1);
+		bbBottom = bb.getBufferById(2);
 		stdDev = bb.getBufferById(3);
 	}
 
-	@Override
-	protected boolean enoughBars() {
-		return (current_index >= (21 + 1));
-	}
-
-	@Override
-	protected boolean checkBuySignal() {
-		if (bullishDivergent[current_index] && stdDev[current_index] > stdDevThreshold) {
+	private boolean checkBuySignal() {
+		if (bullishDivergent[current_index] && Low[current_index] < bbBottom[current_index] && stdDev[current_index] > stdDevThreshold) {
 			if (jaws[current_index] > teeth[current_index] && teeth[current_index] > lips[current_index] && lips[current_index] > High[current_index]) {
 				return true;
 			}
@@ -75,13 +72,23 @@ public class AlligatorDivergent extends TrailingStop {
 		return false;
 	}
 
-	@Override
-	protected boolean checkSellSignal() {
-		if (bearishDivergent[current_index] && stdDev[current_index] > stdDevThreshold) {
+	private boolean checkSellSignal() {
+		if (bearishDivergent[current_index] && High[current_index] > bbTop[current_index] && stdDev[current_index] > stdDevThreshold) {
 			if (jaws[current_index] < teeth[current_index] && teeth[current_index] < lips[current_index] && lips[current_index] < Low[current_index]) {
 				return true;
 			}
 		}
 		return false;
+	}
+
+	@Override
+	protected EnterSignal checkEnterSignal() {
+		EnterSignal signal = null;
+		if (checkBuySignal()) {
+			signal = new EnterSignal(true, High[current_index], Low[current_index]);
+		} else if (checkSellSignal()) {
+			signal = new EnterSignal(false, Low[current_index], High[current_index]);
+		}
+		return signal;
 	}
 }
