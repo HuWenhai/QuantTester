@@ -46,7 +46,6 @@ public class Chaos2 extends AddOnTrailingStop {
 		this.indicators.add(bb);
 		this.indicators.add(fractal);
 		this.indicators.add(ao);
-		this.minimumBarsToWork = Math.max(jawsPeriod + jawsShift, Math.max(BBPeriod, slowMA));
 	}
 
 	public Chaos2(Integer BBPeriod, Float BBDeviations, Float stdDevThreshold) {
@@ -62,7 +61,6 @@ public class Chaos2 extends AddOnTrailingStop {
 		this.indicators.add(bb);
 		this.indicators.add(fractal);
 		this.indicators.add(ao);
-		this.minimumBarsToWork = Math.max(13 + 8, Math.max(BBPeriod, 34));
 	}
 
 	@Override

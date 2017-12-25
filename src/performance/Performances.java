@@ -67,7 +67,7 @@ public abstract class Performances implements Serializable {	// TODO ”√–Ú¡–ªØ±£¥
 			} catch (IllegalArgumentException | IllegalAccessException e) {
 				e.printStackTrace();
 			}
-			result.append(field_name + ":\t" + field_value + System.getProperty("line.separator"));
+			result.append(field_name + ":\t" + field_value + System.lineSeparator());
 		}
 		return result.toString();
 	}

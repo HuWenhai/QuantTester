@@ -118,7 +118,7 @@ public abstract class BarBasedStrategy implements IStrategy, Cloneable {
 		int last_bar_hour = DateTimeHelper.getHour(Time[index - 1]);
 
 		// 17点和18点肯定为当日收盘之后, 次日开盘之前
-		boolean condition1 = last_bar_hour < this_bar_hour && last_bar_hour < 17 && this_bar_hour > 18;	// 头一天有夜盘
+		boolean condition1 = last_bar_hour < 17 && this_bar_hour > 18;	// 头一天有夜盘
 		boolean condition2 = last_bar_hour > this_bar_hour && last_bar_hour < 17;	// 头一天无夜盘
 		return (condition1 || condition2);
 	}

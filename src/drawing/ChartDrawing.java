@@ -55,7 +55,7 @@ public class ChartDrawing {
 	protected List<Boolean> main_smooth_list = new ArrayList<>();
 	protected List<Boolean> separate_smooth_list = new ArrayList<>();
 	
-	protected class LineData {
+	protected static class LineData {
 		public List<Integer> line_x_list = new ArrayList<>();
 		public List<Float> line_y_list = new ArrayList<>();
 		public Color line_color = null;
