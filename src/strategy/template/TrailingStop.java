@@ -20,10 +20,6 @@ public class TrailingStop implements PriceTrigger {
 		this(direction, stopLoss, 0.02f, 0.19999f);
 	}
 
-	public boolean direction() {
-		return direction;
-	}
-
 	public boolean checkStopLoss(float price) {
 		return (direction && price < stopLoss) || (!direction && price > stopLoss);
 	}

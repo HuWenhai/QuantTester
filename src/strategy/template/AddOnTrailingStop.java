@@ -91,7 +91,7 @@ public abstract class AddOnTrailingStop extends BarBasedStrategy implements IEve
 		for (EnterSignalNeedConfirm signal : openSignals) {
 			if (targetVolIdx >= 0 && shortConfirmed.test(signal)) {
 				targetVolIdx = -1;
-				stop = new TrailingStop(false, signal.cancelPrice, AFmax, AFstep);
+				stop = new TrailingStop(false, signal.cancelPrice, AFstep, AFmax);
 				stop.lowestEver = Low[current_index];
 				takenSignals.clear();
 				trigger = signal;
@@ -99,7 +99,7 @@ public abstract class AddOnTrailingStop extends BarBasedStrategy implements IEve
 				break;
 			} else if (targetVolIdx <= 0 && longConfirmed.test(signal)) {
 				targetVolIdx = 1;
-				stop = new TrailingStop(true, signal.cancelPrice, AFmax, AFstep);
+				stop = new TrailingStop(true, signal.cancelPrice, AFstep, AFmax);
 				stop.highestEver = High[current_index];
 				takenSignals.clear();
 				trigger = signal;
