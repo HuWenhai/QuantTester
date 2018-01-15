@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 
+import helper.MathHelper;
+
 public abstract class AddOnTrailingStop extends BarBasedStrategy implements IEveryOHLC {
 
 	private final float AFstep, AFmax;
@@ -86,21 +88,27 @@ public abstract class AddOnTrailingStop extends BarBasedStrategy implements IEve
 		Predicate<EnterSignalNeedConfirm> matchTrigger = signal -> signal.checkTrigger(price);
 		Predicate<EnterSignalNeedConfirm> longConfirmed = matchTrigger.and(signal -> signal.direction).and(signal -> signal.confirm(price));
 		Predicate<EnterSignalNeedConfirm> shortConfirmed = matchTrigger.and(signal -> !signal.direction).and(signal -> signal.confirm(price));
- 
+
 		// check open/reverse
 		for (EnterSignalNeedConfirm signal : openSignals) {
 			if (targetVolIdx >= 0 && shortConfirmed.test(signal)) {
 				targetVolIdx = -1;
-				stop = new TrailingStop(false, signal.cancelPrice, AFstep, AFmax);
-				stop.lowestEver = Low[current_index];
+				float initStop = signal.cancelPrice;
+				if (initStop == Float.MAX_VALUE) {
+					initStop = MathHelper.Max(High[current_index], High[current_index - 1], High[current_index - 2], High[current_index - 3], High[current_index - 4]);
+				}
+				stop = new TrailingStop(false, initStop, AFstep, AFmax);
 				takenSignals.clear();
 				trigger = signal;
 				lowestAddon = trigger.getTriggerPrice();
 				break;
 			} else if (targetVolIdx <= 0 && longConfirmed.test(signal)) {
 				targetVolIdx = 1;
-				stop = new TrailingStop(true, signal.cancelPrice, AFstep, AFmax);
-				stop.highestEver = High[current_index];
+				float initStop = signal.cancelPrice;
+				if (initStop == -Float.MAX_VALUE) {
+					initStop = MathHelper.Min(Low[current_index], Low[current_index - 1], Low[current_index - 2], Low[current_index - 3], Low[current_index - 4]);
+				}
+				stop = new TrailingStop(true, initStop, AFstep, AFmax);
 				takenSignals.clear();
 				trigger = signal;
 				highestAddon = trigger.getTriggerPrice();

@@ -5,6 +5,7 @@ public class TrailingStop implements PriceTrigger {
 	public float stopLoss;
 	private final float AFstep, AFmax;
 
+	private boolean isNewCreate = true;
 	private float AF = 0.0f;
 	public float highestEver = Float.NEGATIVE_INFINITY;
 	public float lowestEver = Float.POSITIVE_INFINITY;
@@ -25,6 +26,17 @@ public class TrailingStop implements PriceTrigger {
 	}
 
 	public void updateStopLoss(float highPrice, float lowPrice) {
+		if (isNewCreate) {
+			// First time, only record the high/low price, don't update AF and SL
+			if (direction) {
+				highestEver = highPrice;
+			} else {
+				lowestEver = lowPrice;
+			}
+			isNewCreate = false;
+			return;
+		}
+
 		if (direction) {
 			if (highPrice > highestEver) {
 				highestEver = highPrice;

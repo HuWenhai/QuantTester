@@ -27,7 +27,7 @@ public class ParamManager {
 		
 		TIME_FRAME tf = null;
 		try {
-			tf = TIME_FRAME.valueOf(tfStr);
+			tf = TIME_FRAME.valueOf(tfStr.toUpperCase());
 		} catch (IllegalArgumentException e) {
 			tf = default_tf;
 			System.out.println("(default): " + default_tf);

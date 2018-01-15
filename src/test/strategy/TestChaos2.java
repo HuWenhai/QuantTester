@@ -22,8 +22,7 @@ public class TestChaos2 {
 				5f
 				);
 
-		AbstractStrategyTester st = new tester.RealStrategyTester(cp.instrument, cp.tf, 10_0000.0f, 0.000_000f);
-		//AbstractStrategyTester st = new tester.RealStrategyTester(cp.instrument, cp.tf, 100_0000.0f, 0.000_065f);
+		AbstractStrategyTester st = new tester.RealStrategyTester(cp.instrument, cp.tf);
 		st.setTestDateRange((int) DateTimeHelper.Ldt2Long(cp.start_date), (int) DateTimeHelper.Ldt2Long(cp.end_date));
 		st.setStrategyParam(Chaos2.class, pp);
 		st.evaluate();

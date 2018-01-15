@@ -2,6 +2,7 @@ package strategy;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import helper.MathHelper;
 import indicator.APPLIED_PRICE;
 import indicator.BollingerBand;
@@ -10,7 +11,6 @@ import indicator.chaos.AwesomeOscillator;
 import indicator.chaos.DivergentBar;
 import indicator.chaos.Fractal;
 import strategy.template.AddOnTrailingStop;
-import strategy.template.PriceTrigger;
 
 public class Chaos2 extends AddOnTrailingStop {
 	private final float stdDevThreshold;
@@ -32,6 +32,61 @@ public class Chaos2 extends AddOnTrailingStop {
 	private int[] confirmedUpIndex = null;
 	private int[] confirmedDnIndex = null;
 	private float[] aoBuffer = null;
+
+	private class AOSignal {
+		private boolean allowLong = false;
+		private boolean allowShort = false;
+
+		private float lowestAO = Float.MAX_VALUE;
+		private float highestAO = -Float.MAX_VALUE;
+
+		public boolean upSignal = false;
+		public boolean dnSignal = false;
+
+		public void update(float aoValue) {
+			if (aoValue < lowestAO && aoValue < 0.0f) {
+				lowestAO = aoValue;
+				highestAO = -Float.MAX_VALUE;
+				allowLong = true;
+				allowShort = false;
+			}
+			if (aoValue > highestAO && aoValue > 0.0f) {
+				lowestAO = Float.MAX_VALUE;
+				highestAO = aoValue;
+				allowLong = false;
+				allowShort = true;
+			}
+			if (allowLong && checkUp()) {
+				upSignal = true;
+				allowLong = false;
+			} else {
+				upSignal = false;
+			}
+			if (allowShort && checkDn()) {
+				dnSignal = true;
+				allowShort = false;
+			} else {
+				dnSignal = false;
+			}
+		}
+
+		private boolean checkUp() {
+			return (aoBuffer[current_index]		> aoBuffer[current_index - 1] &&
+					aoBuffer[current_index - 1] > aoBuffer[current_index - 2] &&
+					aoBuffer[current_index - 2] > aoBuffer[current_index - 3] &&
+					aoBuffer[current_index - 3] > aoBuffer[current_index - 4] &&
+					aoBuffer[current_index - 4] < aoBuffer[current_index - 5]);
+		}
+
+		private boolean checkDn() {
+			return (aoBuffer[current_index]		< aoBuffer[current_index - 1] &&
+					aoBuffer[current_index - 1] < aoBuffer[current_index - 2] &&
+					aoBuffer[current_index - 2] < aoBuffer[current_index - 3] &&
+					aoBuffer[current_index - 3] < aoBuffer[current_index - 4] &&
+					aoBuffer[current_index - 4] > aoBuffer[current_index - 5]);
+		}
+	}
+	private AOSignal aoSignal = null;
 
 	public Chaos2(Float AFstep, Float AFmax, Integer openVol, Integer addOn1Vol, Integer jawsPeriod, Integer jawsShift, Integer teethPeriod, Integer teethShift, Integer lipsPeriod, Integer lipsShift, Integer BBPeriod, Float BBDeviations, Float stdDevThreshold, Integer fastMA, Integer slowMA) {
 		super(AFstep, AFmax, new int[]{0, openVol, openVol + addOn1Vol, 10});
@@ -108,10 +163,12 @@ public class Chaos2 extends AddOnTrailingStop {
 			ret = direction ? Low[current_index] : High[current_index];
 			break;
 		case 2:
-		case 3:
 			ret = direction ?
 					MathHelper.Min(Low[current_index], Low[current_index - 1], Low[current_index - 2]) :
 					MathHelper.Max(High[current_index], High[current_index - 1], High[current_index - 2]);
+			break;
+		case 3:
+			ret = direction ? -Float.MAX_VALUE : Float.MAX_VALUE;
 			break;
 		default:
 			break;
@@ -156,19 +213,11 @@ public class Chaos2 extends AddOnTrailingStop {
 	}
 
 	private boolean checkWiseMan2Buy() {
-		return (aoBuffer[current_index] 	> aoBuffer[current_index - 1] &&
-				aoBuffer[current_index - 1] > aoBuffer[current_index - 2] &&
-				aoBuffer[current_index - 2] > aoBuffer[current_index - 3] &&
-				aoBuffer[current_index - 3] > aoBuffer[current_index - 4] &&
-				aoBuffer[current_index - 4] < aoBuffer[current_index - 5]);
+		return aoSignal.upSignal;
 	}
 
 	private boolean checkWiseMan2Sell() {
-		return (aoBuffer[current_index]		< aoBuffer[current_index - 1] &&
-				aoBuffer[current_index - 1] < aoBuffer[current_index - 2] &&
-				aoBuffer[current_index - 2] < aoBuffer[current_index - 3] &&
-				aoBuffer[current_index - 3] < aoBuffer[current_index - 4] &&
-				aoBuffer[current_index - 4] > aoBuffer[current_index - 5]);
+		return aoSignal.dnSignal;
 	}
 
 	private boolean checkWiseMan3Buy() {
@@ -197,30 +246,20 @@ public class Chaos2 extends AddOnTrailingStop {
 		}
 		if (checkWiseMan3Buy()) {
 			int upIdx = confirmedUpIndex[current_index];
-			if (High[upIdx] > teeth[current_index]) {
+			if (High[upIdx] > teeth[upIdx]) {
 				wiseMans.add(new WiseMan(true, 3) {
 					public boolean confirm(float price) {
-						if (super.confirm(price)) {
-							if (price > teeth[current_index - 1]) {
-								return true;
-							}
-						}
-						return false;
+						return super.confirm(price) && price > teeth[current_index];
 					}
 				});
 			}
 		}
 		if (checkWiseMan3Sell()) {
 			int dnIdx = confirmedDnIndex[current_index];
-			if (Low[dnIdx] < teeth[current_index]) {
+			if (Low[dnIdx] < teeth[dnIdx]) {
 				wiseMans.add(new WiseMan(false, 3) {
 					public boolean confirm(float price) {
-						if (super.confirm(price)) {
-							if (price < teeth[current_index - 1]) {
-								return true;
-							}
-						}
-						return false;
+						return super.confirm(price) && price < teeth[current_index];
 					}
 				});
 			}
@@ -228,57 +267,41 @@ public class Chaos2 extends AddOnTrailingStop {
 		return wiseMans;
 	}
 
-	private boolean noPreviousAOAddon() {
-		for (PriceTrigger trigger : takenSignals) {
-			if (trigger instanceof WiseMan) {
-				if (((WiseMan)trigger).type == 2) {
-					return false;
-				}
-			}
-		}
-		return true;
-	}
-
 	protected List<EnterSignalNeedConfirm> getAddOnSignals() {
 		List<EnterSignalNeedConfirm> wiseMans = new ArrayList<>();
 		if (checkWiseMan2Buy()) {
-			wiseMans.add(new WiseMan(true, 2) {
-				public boolean confirm(float price) {
-					return super.confirm(price) && noPreviousAOAddon();
-				}
-			});
+			wiseMans.add(new WiseMan(true, 2));
 		}
 		if (checkWiseMan2Sell()) {
-			wiseMans.add(new WiseMan(false, 2) {
-				public boolean confirm(float price) {
-					return super.confirm(price) && noPreviousAOAddon();
-				}
-			});
+			wiseMans.add(new WiseMan(false, 2));
 		}
 		if (checkWiseMan3Buy()) {
-			wiseMans.add(new WiseMan(true, 3){
+			wiseMans.add(new WiseMan(true, 3) {
 				public boolean confirm(float price) {
-					if (super.confirm(price)) {
-						if (price > teeth[current_index - 1]) {
-							return true;
-						}
-					}
-					return false;
+					return super.confirm(price) && price > teeth[current_index];
 				}
 			});
 		}
 		if (checkWiseMan3Sell()) {
-			wiseMans.add(new WiseMan(false, 3){
+			wiseMans.add(new WiseMan(false, 3) {
 				public boolean confirm(float price) {
-					if (super.confirm(price)) {
-						if (price < teeth[current_index - 1]) {
-							return true;
-						}
-					}
-					return false;
+					return super.confirm(price) && price < teeth[current_index];
 				}
 			});
 		}
 		return wiseMans;
+	}
+
+	@Override
+	public float onClose() {
+		if (aoSignal == null) {
+			aoSignal = this.new AOSignal();
+		}
+		if (current_index < minimumBarsToWork - 1) {
+			return Close[current_index];
+		}
+
+		aoSignal.update(aoBuffer[current_index]);
+		return super.onClose();
 	}
 }
