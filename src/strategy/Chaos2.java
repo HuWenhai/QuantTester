@@ -96,11 +96,6 @@ public class Chaos2 extends AddOnTrailingStop {
 		this.bb = new BollingerBand(BBPeriod, 0, BBDeviations, APPLIED_PRICE.PRICE_CLOSE);
 		this.fractal = new Fractal();
 		this.ao = new AwesomeOscillator(fastMA, slowMA);
-		this.indicators.add(alligator);
-		this.indicators.add(divergentBar);
-		this.indicators.add(bb);
-		this.indicators.add(fractal);
-		this.indicators.add(ao);
 	}
 
 	public Chaos2(Integer BBPeriod, Float BBDeviations, Float stdDevThreshold) {
@@ -111,11 +106,6 @@ public class Chaos2 extends AddOnTrailingStop {
 		this.bb = new BollingerBand(BBPeriod, 0, BBDeviations, APPLIED_PRICE.PRICE_CLOSE);
 		this.fractal = new Fractal();
 		this.ao = new AwesomeOscillator();
-		this.indicators.add(alligator);
-		this.indicators.add(divergentBar);
-		this.indicators.add(bb);
-		this.indicators.add(fractal);
-		this.indicators.add(ao);
 	}
 
 	@Override

@@ -5,6 +5,7 @@ import java.util.List;
 
 import data.struct.BarSeries;
 import helper.DateTimeHelper;
+import helper.ReflectHelper;
 import indicator.IIndicator;
 import trade.ITradeable;
 
@@ -44,13 +45,13 @@ public abstract class BarBasedStrategy implements IStrategy, Cloneable {
 		calculateIndicators();
 	}
 
-	protected List<IIndicator> indicators = new ArrayList<>();
-
 	protected void calculateIndicators() {
-		for (IIndicator ind : indicators) {
-			if (ind != null) {
-				ind.calculate(Open, High, Low, Close);
-				minimumBarsToWork = Math.max(minimumBarsToWork, ind.minimumBarsToWork());
+		Object[] allFieldObjects = ReflectHelper.getAllFieldObjectsIncludingSuper(this);
+		for (Object fieldObj : allFieldObjects) {
+			if (fieldObj != null && fieldObj instanceof IIndicator) {
+				IIndicator indicator = (IIndicator) fieldObj;
+				indicator.calculate(Open, High, Low, Close);
+				minimumBarsToWork = Math.max(minimumBarsToWork, indicator.minimumBarsToWork());
 			}
 		}
 	}

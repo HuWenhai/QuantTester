@@ -20,7 +20,6 @@ public class FractalChannelTrend extends BarBasedStrategy implements IEveryOHLC 
 	public FractalChannelTrend(Integer Period) {
 		this.period = Period;
 		this.fractalChannel = new FractalChannel(period);
-		this.indicators.add(fractalChannel);
 	}
 
 	@Override

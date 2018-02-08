@@ -23,9 +23,6 @@ public class DblMaPsarStrategy extends BarBasedStrategy implements IEveryOHLC {
 		this.fast_ma = new MA(fastPeriod, ma_method, applied_price);
 		this.slow_ma = new MA(slowPeriod, ma_method, applied_price);
 		this.psar = new ParabolicSAR(SARStep, SARMaximum);
-		this.indicators.add(fast_ma);
-		this.indicators.add(slow_ma);
-		this.indicators.add(psar);
 	}
 	
 	@Override

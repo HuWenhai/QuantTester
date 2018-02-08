@@ -18,7 +18,6 @@ public class MABreakStrategy extends BarBasedStrategy implements IEveryBar {
 		this.ma_method = ma_method;
 		this.applied_price = applied_price;
 		this.ma = new MA(this.period, this.ma_method, this.applied_price);
-		this.indicators.add(ma);
 	}
 
 	public MABreakStrategy(Integer Period, String ma_method) {

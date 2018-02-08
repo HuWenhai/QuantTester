@@ -30,9 +30,6 @@ public class AlligatorDivergent extends ReverseWithTrailingStop {
 		this.alligator = new Alligator();
 		this.divergentBar = new DivergentBar();
 		this.bb = new BollingerBand(BBPeriod, 0, BBDeviations, APPLIED_PRICE.PRICE_CLOSE);
-		this.indicators.add(alligator);
-		this.indicators.add(divergentBar);
-		this.indicators.add(bb);
 	}
 
 	public AlligatorDivergent(Float stdDevThreshold) {
@@ -41,9 +38,6 @@ public class AlligatorDivergent extends ReverseWithTrailingStop {
 		this.alligator = new Alligator();
 		this.divergentBar = new DivergentBar();
 		this.bb = new BollingerBand();
-		this.indicators.add(alligator);
-		this.indicators.add(divergentBar);
-		this.indicators.add(bb);
 	}
 
 	public AlligatorDivergent() {

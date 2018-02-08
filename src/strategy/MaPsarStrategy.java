@@ -20,8 +20,6 @@ public class MaPsarStrategy extends BarBasedStrategy implements IEveryOHLC {
 		this.period = Period;
 		this.ma = new MA(Period, ma_method, applied_price);
 		this.psar = new ParabolicSAR(SARStep, SARMaximum);
-		this.indicators.add(ma);
-		this.indicators.add(psar);
 	}
 	
 	@Override
