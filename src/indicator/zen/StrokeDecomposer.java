@@ -112,6 +112,15 @@ class StrokeDecomposer {
 			while (nextFractal.fractal == 0 && iterator.hasNext()) {
 				nextFractal = iterator.next();
 			}
+			if (nextFractal.fractal == 0) {
+				// Last HighLowLine but not fractal
+				Fractal lastFractal = getFractalbyIndex(fractalList, lastEndPoint);
+				lastEndPoint = confirmedEP.originalOrdinal;
+				Fractal thisFractal = getFractalbyIndex(fractalList, unconfirmedEP.originalOrdinal); 
+				strokeList.add(new Stroke(lastFractal, thisFractal));
+				confirmList.add(getFractalbyIndex(fractalList, unconfirmedEP.originalOrdinal));
+				break;
+			}
 			int nextFractalIndex = iterator.nextIndex();
 			if (unconfirmedEP.fractal == nextFractal.fractal) {
 				boolean foundHigher = (nextFractal.fractal == 1 && nextFractal.high > unconfirmedEP.high);
