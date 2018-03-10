@@ -11,10 +11,8 @@ public class EnterSignal implements PriceTrigger {
 		this.cancelPrice = cancelPrice;
 	}
 
-	// Construct unconditional enter signal
-	public EnterSignal(boolean direction) {
-		this(direction, direction ? Float.NEGATIVE_INFINITY : Float.POSITIVE_INFINITY, direction ? Float.POSITIVE_INFINITY : Float.NEGATIVE_INFINITY);
-	}
+	public static final EnterSignal UNCONDITIONALLY_BUY = new EnterSignal(true, Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY);
+	public static final EnterSignal UNCONDITIONALLY_SELL = new EnterSignal(false, Float.POSITIVE_INFINITY, Float.NEGATIVE_INFINITY);
 
 	@Override
 	public boolean getDirection() {

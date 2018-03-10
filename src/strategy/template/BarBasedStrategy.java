@@ -1,8 +1,5 @@
 package strategy.template;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import data.struct.BarSeries;
 import helper.DateTimeHelper;
 import helper.ReflectHelper;
