@@ -9,6 +9,8 @@ public interface Trend {
 	public int endIndex();
 	public float startValue();
 	public float endValue();
+	public float getMax();
+	public float getMin();
 	public boolean isCompleted();
 	public boolean isMinimumLevel();
 	public List<? extends Trend> getSubTrends();

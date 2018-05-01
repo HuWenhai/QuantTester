@@ -3,20 +3,17 @@ package indicator.zen;
 import java.util.ArrayList;
 import java.util.List;
 
+import helper.MathHelper;
+
 class CenterAnalyzer {
 
 	private CenterAnalyzer() {
 	}
 
 	private static Center checkCenter(boolean direction, Trend ...trends) {
-		float a = trends[0].startValue();
-		float b = trends[1].startValue();
-		float c = trends[2].startValue();
-		float d = trends[2].endValue();
-
-		float hi = direction ? Math.min(a, c) : Math.min(b, d);
-		float lo = direction ? Math.max(b, d) : Math.max(a, c);
-		if (hi > lo) {
+		float hi = MathHelper.Min(trends[0].getMax(), trends[1].getMax(), trends[2].getMax());
+		float lo = MathHelper.Max(trends[0].getMin(), trends[1].getMin(), trends[2].getMin());
+		if (hi >= lo) {
 			return new Center(lo, hi, trends);
 		} else {
 			return null;
@@ -24,9 +21,7 @@ class CenterAnalyzer {
 	}
 
 	private static boolean touched(Center center, Trend trend) {
-		float high = Math.max(trend.startValue(), trend.endValue());
-		float low = Math.min(trend.startValue(), trend.endValue());
-		return (center.highRange > low) && (center.lowRange < high);
+		return (center.highRange > trend.getMin()) && (center.lowRange < trend.getMax());
 	}
 
 	public static List<Center> analyzeSegment(Segment segment) {

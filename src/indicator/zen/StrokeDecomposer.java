@@ -3,6 +3,7 @@ package indicator.zen;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.stream.IntStream;
 
 import indicator.zen.FractalFinder.HighLowLine;
 
@@ -74,6 +75,14 @@ class StrokeDecomposer {
 		return ret;
 	}
 
+	private static Stroke createStrokeFromFractal(Fractal startFractal, Fractal endFractal, float[] high, float[] low) {
+		int startIdx = startFractal.peakIdx;
+		int endIdx = endFractal.peakIdx + 1;
+		double maxValue = IntStream.range(startIdx, endIdx).mapToDouble(i -> high[i]).max().getAsDouble();
+		double minValue = IntStream.range(startIdx, endIdx).mapToDouble(i -> low[i]).min().getAsDouble();
+		return new Stroke(startFractal, endFractal, (float)maxValue, (float)minValue);
+	}
+
 	public List<Stroke> calculate(List<HighLowLine> adjustedKLines, List<Fractal> fractalList, float[] high, float[] low) {
 		int lastEndPoint = 0;
 		strokeList = new ArrayList<>();
@@ -116,8 +125,8 @@ class StrokeDecomposer {
 				// Last HighLowLine but not fractal
 				Fractal lastFractal = getFractalbyIndex(fractalList, lastEndPoint);
 				lastEndPoint = confirmedEP.originalOrdinal;
-				Fractal thisFractal = getFractalbyIndex(fractalList, unconfirmedEP.originalOrdinal); 
-				strokeList.add(new Stroke(lastFractal, thisFractal));
+				Fractal thisFractal = getFractalbyIndex(fractalList, unconfirmedEP.originalOrdinal);
+				strokeList.add(createStrokeFromFractal(lastFractal, thisFractal, high, low));
 				confirmList.add(getFractalbyIndex(fractalList, unconfirmedEP.originalOrdinal));
 				break;
 			}
@@ -147,7 +156,7 @@ class StrokeDecomposer {
 							Fractal lastFractal = getFractalbyIndex(fractalList, lastEndPoint);
 							lastEndPoint = confirmedEP.originalOrdinal;
 							Fractal thisFractal = getFractalbyIndex(fractalList, confirmedEP.originalOrdinal); 
-							strokeList.add(new Stroke(lastFractal, thisFractal));
+							strokeList.add(createStrokeFromFractal(lastFractal, thisFractal, high, low));
 							confirmList.add(getFractalbyIndex(fractalList, nextFractal.originalOrdinal));
 							firstFailFractal = Float.NEGATIVE_INFINITY;
 					}

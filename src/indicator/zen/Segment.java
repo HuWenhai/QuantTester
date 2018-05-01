@@ -43,6 +43,16 @@ public class Segment implements Trend {
 	}
 
 	@Override
+	public float getMax() {
+		return (float) Arrays.stream(subTrends).mapToDouble(Trend::getMax).max().getAsDouble();
+	}
+
+	@Override
+	public float getMin() {
+		return (float) Arrays.stream(subTrends).mapToDouble(Trend::getMin).min().getAsDouble();
+	}
+
+	@Override
 	public boolean isMinimumLevel() {
 		return false;
 	}

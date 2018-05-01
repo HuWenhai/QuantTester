@@ -5,10 +5,14 @@ import java.util.List;
 public class Stroke implements Trend {
 	public final Fractal startFractal;
 	public final Fractal endFractal;
+	private final float maxValue;
+	private final float minValue;
 
-	public Stroke(Fractal startFractal, Fractal endFractal) {
+	public Stroke(Fractal startFractal, Fractal endFractal, float maxValue, float minValue) {
 		this.startFractal = startFractal;
 		this.endFractal = endFractal;
+		this.maxValue = maxValue;
+		this.minValue = minValue;
 	}
 
 	@Override
@@ -34,6 +38,16 @@ public class Stroke implements Trend {
 	@Override
 	public float endValue() {
 		return endFractal.peakValue;
+	}
+
+	@Override
+	public float getMax() {
+		return maxValue;
+	}
+
+	@Override
+	public float getMin() {
+		return minValue;
 	}
 
 	@Override
