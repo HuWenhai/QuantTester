@@ -31,34 +31,53 @@ class StrokeDecomposer {
 			return false;
 		}
 
-		boolean foundGap = false;
-		int gapBegin = 0;
-		int gapEnd = 0;
 		for (int i = start; i < end; i++) {
 			if (endFractal == 1) {
 				if (low[i + 1] > (high[i] * (1 + gapRatio))) {
-					gapBegin = i;
-					gapEnd = i + 1;
+					if (low[i + 2] > high[i] && low[i + 3] > high[i]) {
+						return true;
+					}
 				}
 			} else if (endFractal == -1) {
 				if (high[i + 1] < (low[i] * (1 - gapRatio))) {
-					gapBegin = i;
-					gapEnd = i + 1;
+					if (high[i + 2] < low[i] && high[i + 3] < low[i]) {
+						return true;
+					}				
 				}
-			}
-		}
-		if (foundGap) {
-			if (endFractal == 1) {
-				if (low[gapEnd + 1] > high[gapBegin] && low[gapEnd + 2] > high[gapBegin]) {
-					return true;
-				}
-			} else if (endFractal == -1) {
-				if (high[gapEnd + 1] < low[gapBegin] && high[gapEnd + 2] < low[gapBegin]) {
-					return true;
-				}				
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * Check if there was a backward > 50% before secondary high/low fractal.
+	 * 
+	 * @param unconfirmedEP last unconfirmed end point
+	 * @param firstFailFractal first reverse direction fractal after unconfirmedEP but with only 4 HighLowLine between
+	 * @param secondaryFractal next fractal to check
+	 * @param high high price buffer
+	 * @param low low price buffer
+	 * @return true if there was no backward > 50%, false otherwise
+	 */
+	private static boolean checkBackward(HighLowLine unconfirmedEP, HighLowLine firstFailFractal, HighLowLine secondaryFractal, float[] high, float[] low) {
+		assert (unconfirmedEP.fractal == - firstFailFractal.fractal && firstFailFractal.fractal == secondaryFractal.fractal);
+
+		float half;
+		if (unconfirmedEP.fractal == 1) {
+			half = (unconfirmedEP.high + firstFailFractal.low) / 2.0f;
+		} else {
+			half = (unconfirmedEP.low + firstFailFractal.high) / 2.0f;
+		}
+		
+		for (int i = firstFailFractal.originalOrdinal + 1; i <= secondaryFractal.originalOrdinal; i++) {
+			if (unconfirmedEP.fractal == 1 && high[i] >= half) {
+				return false;
+			}
+			if (unconfirmedEP.fractal == -1 && low[i] <= half) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	private static Fractal getFractalbyIndex(List<Fractal> fractalList, int originalOrdinal) {
@@ -69,9 +88,7 @@ class StrokeDecomposer {
 				break;
 			}
 		}
-		if (ret == null) {
-			System.out.println("ERROR!!! ret = null!!!");
-		}
+		assert ret != null : "ERROR! ret = null! Can not find fractal at index =" + originalOrdinal;
 		return ret;
 	}
 
@@ -115,7 +132,8 @@ class StrokeDecomposer {
 		}
 
 		lastEndPoint = confirmedEP.originalOrdinal;
-		float firstFailFractal = Float.NEGATIVE_INFINITY;
+		HighLowLine firstFailFractal = null;
+		boolean allowSecondary = false;
 		while (iterator.hasNext()) {
 			HighLowLine nextFractal = iterator.next();
 			while (nextFractal.fractal == 0 && iterator.hasNext()) {
@@ -137,7 +155,8 @@ class StrokeDecomposer {
 				if (foundHigher || foundLower) {
 					unconfirmedEP = nextFractal;
 					unconfirmedIndex = nextFractalIndex;
-					firstFailFractal = Float.NEGATIVE_INFINITY;
+					firstFailFractal = null;
+					allowSecondary = false;
 				}
 			} else {
 				final int kLineCount = nextFractalIndex - unconfirmedIndex + 1;
@@ -147,23 +166,29 @@ class StrokeDecomposer {
 					gapStroke = checkGap(nextFractal.fractal, unconfirmedEP.originalOrdinal, nextFractal.originalOrdinal, high, low);
 				}
 				if (haveEnoughKLines || gapStroke) {
-					if ((firstFailFractal == Float.NEGATIVE_INFINITY) || (firstFailFractal != Float.NEGATIVE_INFINITY && 
-							((nextFractal.fractal == 1 && nextFractal.high > firstFailFractal) || 
-								(nextFractal.fractal == -1 && nextFractal.low < firstFailFractal)))) {
-							confirmedEP = unconfirmedEP;
-							unconfirmedEP = nextFractal;
-							unconfirmedIndex = nextFractalIndex;
-							Fractal lastFractal = getFractalbyIndex(fractalList, lastEndPoint);
-							lastEndPoint = confirmedEP.originalOrdinal;
-							Fractal thisFractal = getFractalbyIndex(fractalList, confirmedEP.originalOrdinal); 
-							strokeList.add(createStrokeFromFractal(lastFractal, thisFractal, high, low));
-							confirmList.add(getFractalbyIndex(fractalList, nextFractal.originalOrdinal));
-							firstFailFractal = Float.NEGATIVE_INFINITY;
+					boolean firstMatch = (firstFailFractal == null);
+					boolean betterMatch = (firstFailFractal != null &&
+							((nextFractal.fractal == 1 && nextFractal.high > firstFailFractal.high) ||
+							 (nextFractal.fractal == -1 && nextFractal.low < firstFailFractal.low)));
+					boolean secondMatch = (firstFailFractal != null && allowSecondary && checkBackward(unconfirmedEP, firstFailFractal, nextFractal, high, low));
+					if (firstMatch || betterMatch || secondMatch) {
+						confirmedEP = unconfirmedEP;
+						unconfirmedEP = nextFractal;
+						unconfirmedIndex = nextFractalIndex;
+						Fractal lastFractal = getFractalbyIndex(fractalList, lastEndPoint);
+						lastEndPoint = confirmedEP.originalOrdinal;
+						Fractal thisFractal = getFractalbyIndex(fractalList, confirmedEP.originalOrdinal); 
+						strokeList.add(createStrokeFromFractal(lastFractal, thisFractal, high, low));
+						confirmList.add(getFractalbyIndex(fractalList, nextFractal.originalOrdinal));
+						firstFailFractal = null;
+						allowSecondary = false;
 					}
-				} else if (firstFailFractal == Float.NEGATIVE_INFINITY && kLineCount == 4 && strict) {
-					// Do nothing
-				} else if (firstFailFractal == Float.NEGATIVE_INFINITY && kLineCount < 4 && strict) {
-					firstFailFractal = (nextFractal.fractal == 1) ? nextFractal.high : nextFractal.low;
+				} else if (firstFailFractal == null && kLineCount == minimumBarsForStrokeConfirm - 1 && strict) {
+					firstFailFractal = nextFractal;
+					allowSecondary = true;
+				} else if (firstFailFractal == null && kLineCount < minimumBarsForStrokeConfirm - 1 && strict) {
+					firstFailFractal = nextFractal;
+					allowSecondary = false;
 				}
 			}
 		}

@@ -46,12 +46,12 @@ public class FractalFinder implements IIndicator {
 		}
 	}
 
-	private HighLowLine highhigh(HighLowLine k1, HighLowLine k2) {
+	private static HighLowLine highhigh(HighLowLine k1, HighLowLine k2) {
 		int ordinal = (k1.high > k2.high || k1.low < k2.low) ? k1.originalOrdinal : k2.originalOrdinal;
 		return new HighLowLine(ordinal, Math.max(k1.high, k2.high), Math.max(k1.low, k2.low));
 	}
 
-	private HighLowLine lowlow(HighLowLine k1, HighLowLine k2) {
+	private static HighLowLine lowlow(HighLowLine k1, HighLowLine k2) {
 		int ordinal = (k1.high > k2.high || k1.low < k2.low) ? k1.originalOrdinal : k2.originalOrdinal;
 		return new HighLowLine(ordinal, Math.min(k1.high, k2.high), Math.min(k1.low, k2.low));
 	}
