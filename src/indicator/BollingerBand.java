@@ -1,5 +1,7 @@
 package indicator;
 
+import static helper.MAHelper.SimpleMA;
+
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
@@ -46,21 +48,6 @@ public class BollingerBand implements IIndicator {
 		ExtBLBuffer = new float[price.length];
 		ExtStdDevBuffer = new float[price.length];
 		this.calculateForAppliedPrice(price);
-	}
-
-	// TODO create MA_helper
-	private static float SimpleMA(final int position, final int period, final float[] price) {
-		// ---
-		float result = 0.0f;
-		// --- check position
-		if (position >= period - 1 && period > 0) {
-			// --- calculate value
-			for (int i = 0; i < period; i++)
-				result += price[position - i];
-			result /= period;
-		}
-		// ---
-		return (result);
 	}
 
 	private float StdDev_Func(int position, float price[], float MAprice[], int period) {

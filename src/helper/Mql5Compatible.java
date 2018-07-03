@@ -9,6 +9,10 @@ public interface Mql5Compatible {
 		return Math.max(x, y);
 	}
 	
+	default float MathAbs(float x) {
+		return Math.abs(x);
+	}
+	
 	default boolean IsStopped() {
 		return false;
 	}
