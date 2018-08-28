@@ -21,6 +21,11 @@ public final class Config {
 	public static final String ResultDir;
 	public static final int UseThreads;
 
+	public static final String hostName;
+	public static final int port;
+	public static final String userName;
+	public static final String password;
+
 	private static String addSeparatorIfNecessary(String path) {
 		if (path.endsWith(File.separator)) {
 			return path;
@@ -38,6 +43,11 @@ public final class Config {
 		String ResultDir_tmp = null;
 		String UseThreads_str = null;
 
+		String hostName_tmp = null;
+		String port_str = null;
+		String userName_tmp = null;
+		String password_tmp = null;
+
 		try (FileInputStream in = new FileInputStream("config.ini")) {
 			configFile.load(in);
 			KTExportDir_tmp = configFile.get("KTExportDir").toString();
@@ -45,6 +55,11 @@ public final class Config {
 			CompondBars_str = configFile.get("UseCompondBars").toString();
 			ResultDir_tmp = configFile.get("ResultDir").toString();
 			UseThreads_str = configFile.get("UseThreads").toString();
+
+			hostName_tmp = configFile.get("HostName").toString();
+			port_str = configFile.get("Port").toString();
+			userName_tmp = configFile.get("UserName").toString();
+			password_tmp = configFile.get("Password").toString();
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -68,5 +83,10 @@ public final class Config {
 		}
 		UseThreads = num;
 		UseCompondBars = Boolean.parseBoolean(CompondBars_str);
+
+		hostName = hostName_tmp;
+		port = Integer.parseInt(port_str);
+		userName = userName_tmp;
+		password = password_tmp;
 	}
 }
