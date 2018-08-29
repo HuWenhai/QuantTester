@@ -54,7 +54,8 @@ public abstract class BarBasedStrategy implements IStrategy, Cloneable {
 	}
 
 	protected int current_index = 0;
-	
+
+	@Override
 	public final int getCurrentTime() {
 		return Time[current_index];
 	}

@@ -4,6 +4,7 @@ import trade.ITradeable;
 
 public interface IEveryOHLC extends IStrategy {
 	default public void tradeOneBar(ITradeable trader) {
+		trader.setTime(getCurrentTime());
 		trader.setPosition(onOpen(), getPosition());
 		if (getPosition() <= 0) {
 			trader.setPosition(onHigh(), getPosition());
