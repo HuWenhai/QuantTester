@@ -1,6 +1,7 @@
 package trade;
 
 import strategy.Portfolio;
+import tester.ActionDetail;
 
 public class IdealTrader implements ITradeable {
 
@@ -8,13 +9,35 @@ public class IdealTrader implements ITradeable {
 	protected final float vol_unit;
 	protected final Portfolio portfolio;
 
-	public IdealTrader(Portfolio portfolio, float vol_unit) {
+	protected boolean saveDetail;
+	protected ActionDetail actionDetail = null;
+	protected int currentMonth = -1;
+	protected int currentTime = -1;
+
+	public IdealTrader(Portfolio portfolio, boolean saveDetail, float vol_unit) {
 		this.portfolio = portfolio;
 		this.vol_unit = vol_unit;
+		this.saveDetail = saveDetail;
+		if (saveDetail) {
+			actionDetail = new ActionDetail();
+		}
 	}
 
-	public IdealTrader(Portfolio portfolio) {
-		this(portfolio, 10.0f);
+	public IdealTrader(Portfolio portfolio, boolean saveDetail) {
+		this(portfolio, saveDetail, 1.0f);
+	}
+
+	public void setMonth(int month) {
+		// FIXME
+		this.currentMonth = month + 1;
+	}
+
+	public void setTime(int time) {
+		this.currentTime = time;
+	}
+
+	public ActionDetail getActionDetail() {
+		return this.actionDetail;
 	}
 
 	@Override
@@ -51,24 +74,36 @@ public class IdealTrader implements ITradeable {
 	protected void openLong(float price, int vol_num) {
 		if (portfolio.openLong(price, vol_num * vol_unit)) {
 			position += vol_num;
+			if (saveDetail) {
+				actionDetail.append(currentMonth, currentTime, price, (int) (vol_num * vol_unit), true, true);
+			}
 		}
 	}
 
 	protected void openShort(float price, int vol_num) {
 		if (portfolio.openShort(price, vol_num * vol_unit)) {
 			position -= vol_num;
+			if (saveDetail) {
+				actionDetail.append(currentMonth, currentTime, price, (int) (vol_num * vol_unit), false, true);
+			}
 		}
 	}
 
 	protected void closeLong(float price, int vol_num) {
 		if (portfolio.closeLong(price, vol_num * vol_unit)) {
 			position -= vol_num;
+			if (saveDetail) {
+				actionDetail.append(currentMonth, currentTime, price, (int) (vol_num * vol_unit), false, false);
+			}
 		}
 	}
 
 	protected void closeShort(float price, int vol_num) {
 		if (portfolio.closeShort(price, vol_num * vol_unit)) {
 			position += vol_num;
+			if (saveDetail) {
+				actionDetail.append(currentMonth, currentTime, price, (int) (vol_num * vol_unit), true, false);
+			}
 		}
 	}
 }

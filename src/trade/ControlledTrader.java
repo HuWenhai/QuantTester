@@ -8,12 +8,12 @@ public class ControlledTrader extends IdealTrader {
 	public boolean allow_buy  = true;
 	public boolean allow_sell = true;
 
-	public ControlledTrader(Portfolio portfolio, float vol_unit) {
-		super(portfolio, vol_unit);
+	public ControlledTrader(Portfolio portfolio, boolean saveDetail, float vol_unit) {
+		super(portfolio, saveDetail, vol_unit);
 	}
 
-	public ControlledTrader(Portfolio portfolio) {
-		super(portfolio);
+	public ControlledTrader(Portfolio portfolio, boolean saveDetail) {
+		super(portfolio, saveDetail);
 	}
 
 	@Override

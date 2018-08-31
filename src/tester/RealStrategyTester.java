@@ -39,6 +39,7 @@ public class RealStrategyTester extends AbstractStrategyTester {
 
 	@Override
 	public void setStrategyParam(Class<? extends BarBasedStrategy> astcls, Object... param) {
+		super.setStrategyParam(astcls, param);
 		strategies = new BarBasedStrategy[12];
 		strategies[0] = createStrategy(astcls, param);
 		for (int i = 1; i < 12; i++) {
@@ -51,6 +52,7 @@ public class RealStrategyTester extends AbstractStrategyTester {
 		}
 		
 		for (int i = 0; i < 12; i++) {
+			strategies[i].setMonth(i);
 			BarSeries bar_series = datasource.getBarSeries(i + 1, time_frame);
 			if (bar_series != null) {
 				strategies[i].setBarSeries(bar_series);
@@ -97,7 +99,7 @@ public class RealStrategyTester extends AbstractStrategyTester {
 
 	@Override
 	protected float[] Evaluate_p(Portfolio portfolio) {
-		ControlledTrader controlled_trader = new ControlledTrader(portfolio);
+		ControlledTrader controlled_trader = new ControlledTrader(portfolio, recordActionDetail);
 		
 		int current_trading_month_id = -1;
 		float[] daily_balance = new float[end_index - start_index + 1];
@@ -108,6 +110,7 @@ public class RealStrategyTester extends AbstractStrategyTester {
 			if (current_trading_month_id != main_month_id) {
 				if (portfolio.hasNoPosition()) {
 					current_trading_month_id = main_month_id;
+					controlled_trader.setMonth(current_trading_month_id);
 					if (i < c_backword_days + force_switch_counter) {
 						strategies[current_trading_month_id].setIndexByTime(adjusted_daily_open_time[0]);
 					} else {
@@ -142,6 +145,7 @@ public class RealStrategyTester extends AbstractStrategyTester {
 			float settle_price = daily_barseries[current_trading_month_id].getSettlementByTime(close_time);
 			daily_balance[i - start_index] = portfolio.getBalance(settle_price);
 		}
+		actionDetail = controlled_trader.getActionDetail();
 
 		return daily_balance;
 	}

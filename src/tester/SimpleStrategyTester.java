@@ -29,13 +29,14 @@ public class SimpleStrategyTester extends AbstractStrategyTester {
 
 	@Override
 	public void setStrategyParam(Class<? extends BarBasedStrategy> astcls, Object... param) {
+		super.setStrategyParam(astcls, param);
 		strategy = createStrategy(astcls, param);
 		strategy.setBarSeries(datasource.getBarSeries(0, time_frame));
 	}
 
 	@Override
 	protected float[] Evaluate_p(Portfolio portfolio) {
-		ITradeable ideal_trader = new IdealTrader(portfolio);
+		IdealTrader ideal_trader = new IdealTrader(portfolio, recordActionDetail);
 		
 		float[] daily_balance = new float[end_index - start_index + 1];
 		strategy.setIndexByTime(adjusted_daily_open_time[start_index]);
@@ -44,6 +45,7 @@ public class SimpleStrategyTester extends AbstractStrategyTester {
 			strategy.calcUntil(ideal_trader, adjusted_daily_close_time[i]);
 			daily_balance[i - start_index] = portfolio.getBalance(settle_price[i]);
 		}
+		actionDetail = ideal_trader.getActionDetail();
 
 		return daily_balance;
 	}

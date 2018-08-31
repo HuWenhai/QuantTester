@@ -85,7 +85,7 @@ public class LimitStrategyTester extends RealStrategyTester {
 	
 	@Override
 	protected float[] Evaluate_p(Portfolio portfolio) {
-		ControlledTrader controlled_trader = new ControlledTrader(portfolio);
+		ControlledTrader controlled_trader = new ControlledTrader(portfolio, recordActionDetail);
 		
 		int current_trading_month_id = -1;
 		float[] daily_balance = new float[end_index - start_index + 1];
@@ -96,6 +96,7 @@ public class LimitStrategyTester extends RealStrategyTester {
 			if (current_trading_month_id != main_month_id) {
 				if (portfolio.hasNoPosition()) {
 					current_trading_month_id = main_month_id;
+					controlled_trader.setMonth(current_trading_month_id);
 					if (i < c_backword_days + force_switch_counter) {
 						strategies[current_trading_month_id].setIndexByTime(adjusted_daily_open_time[0]);
 					} else {
@@ -145,6 +146,7 @@ public class LimitStrategyTester extends RealStrategyTester {
 			float settle_price = daily_barseries[current_trading_month_id].getSettlementByTime(close_time);
 			daily_balance[i - start_index] = portfolio.getBalance(settle_price);
 		}
+		actionDetail = controlled_trader.getActionDetail();
 
 		return daily_balance;
 	}

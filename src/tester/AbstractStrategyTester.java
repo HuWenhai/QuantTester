@@ -2,6 +2,11 @@ package tester;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -10,6 +15,8 @@ import data.IDataSource;
 import data.TIME_FRAME;
 import data.struct.FutureBarSeries;
 import drawing.ResultDrawing;
+import helper.DateTimeHelper;
+import helper.MySQLHelper;
 import performance.DailyPerformances;
 import performance.Performances;
 import strategy.Portfolio;
@@ -51,18 +58,60 @@ public abstract class AbstractStrategyTester implements Cloneable {
 		commission_ratio_table.put("ta", 0.000_750f);
 	}
 
+	protected String strategyName;
 	protected IDataSource datasource;
+	protected final String instrument;
 	protected final TIME_FRAME time_frame;
 	protected final float init_cash;
 	protected final float commission_ratio;
 
 	protected Performances performances = null;
-	
+	protected boolean recordActionDetail = false;
+	protected ActionDetail actionDetail = null;
+
 	public Performances getPerformances() {
 		return performances;
 	}
 
+	public void enableActionDetailRecording() {
+		recordActionDetail = true;
+	}
+
+	public void saveActionDetail() {
+		if (actionDetail != null) {
+			actionDetail.strategyName = strategyName;
+			actionDetail.instrument = instrument;
+			actionDetail.timeFrame = time_frame;
+			actionDetail.datasource = "KT";
+			int[] Time = datasource.getBarSeries(0, TIME_FRAME.DAY).times;
+			actionDetail.testStartTime = Time[start_index];
+			actionDetail.testEndTime = Time[end_index];
+
+			// FIXME
+			String testStartDate = DateTimeHelper.Long2Ldt(actionDetail.testStartTime).format(DateTimeFormatter.BASIC_ISO_DATE);
+			String testEndDate = DateTimeHelper.Long2Ldt(actionDetail.testEndTime).format(DateTimeFormatter.BASIC_ISO_DATE);
+			String now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+			String tableName = strategyName + "_" + instrument + "_" + time_frame + "_" + testStartDate + "_" + testEndDate + "_" + now;
+			Connection conn = MySQLHelper.getConnection("backtest");
+			if (conn != null) {
+	            try (Statement stmt = conn.createStatement()){
+	            	stmt.executeUpdate("CREATE TABLE " + tableName + " (month INT NULL, time INT NULL, price FLOAT NULL, volume INT NULL, direction INT NULL, opencloseflag INT NULL)");
+					int len = actionDetail.actionMonths.size();
+					for (int i = 0; i < len; i++) {
+						stmt.executeUpdate("INSERT INTO " + tableName + " (month, time, price, volume, direction, opencloseflag) VALUES (" + 
+						actionDetail.actionMonths.get(i) + ", " + actionDetail.actionTimes.get(i) + ", " + actionDetail.prices.get(i) + ", " + 
+						actionDetail.volumes.get(i) + ", " + (actionDetail.directions.get(i) ? 1 : 0) + ", " + (actionDetail.openCloseFlags.get(i) ? 1 : 0) + ")");
+					}
+				} catch (SQLException e) {
+					e.printStackTrace();
+					System.out.print("MYSQL ERROR:" + e.getMessage());
+				}
+			}
+		}
+	}
+
 	public AbstractStrategyTester(String instrument, TIME_FRAME time_frame, float init_cash, float commission_ratio) {
+		this.instrument = instrument;
 		this.time_frame = time_frame;
 		this.init_cash = init_cash;
 		this.commission_ratio = commission_ratio;
@@ -137,8 +186,10 @@ public abstract class AbstractStrategyTester implements Cloneable {
 		}
 	}
 	
-	public abstract void setStrategyParam(Class<? extends BarBasedStrategy> astcls, Object... param);
-	
+	public void setStrategyParam(Class<? extends BarBasedStrategy> astcls, Object... param) {
+		this.strategyName = astcls.getSimpleName();
+	}
+
 	protected abstract float[] Evaluate_p(Portfolio portfolio);
 	
 	private float[] daily_balance = null;
