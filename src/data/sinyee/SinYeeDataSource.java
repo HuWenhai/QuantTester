@@ -226,7 +226,7 @@ public class SinYeeDataSource extends AbstractDataSource implements ITickDataSou
 			compose_time_frames_set.removeIf(tf -> tf.ordinal() <= TIME_FRAME.MIN1.ordinal());
 			compose_time_frames_set.removeIf(tf -> tf.ordinal() >= TIME_FRAME.DAY.ordinal());
 			List<TIME_FRAME> composed_time_frames_list = new ArrayList<>(compose_time_frames_set);
-			composed_time_frames_list.sort(Comparator.comparing(tf -> tf.ordinal()));
+			composed_time_frames_list.sort(Comparator.comparing(TIME_FRAME::ordinal));
 			for (int i = 0; i < 13; i++) {
 				for (TIME_FRAME time_frame : composed_time_frames_list) {
 					generateFromLowerLevelBars(i, time_frame);

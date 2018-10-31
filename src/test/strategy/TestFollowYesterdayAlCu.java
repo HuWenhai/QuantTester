@@ -45,7 +45,7 @@ public class TestFollowYesterdayAlCu {
 		
 		final int len = cu_al_close.length;
 		float[] balance = new float[len];
-		ITradeable trader = new IdealTrader(portfolio);
+		ITradeable trader = new IdealTrader(portfolio, false);
 		for (int i = 0; i < len; i++) {
 			strategy.calcNextBar(trader);
 			balance[i] = portfolio.getBalance(cu_al_close[i]);
