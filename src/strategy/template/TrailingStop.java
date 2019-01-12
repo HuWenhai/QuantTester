@@ -71,8 +71,14 @@ public class TrailingStop implements PriceTrigger {
 		String ret = System.lineSeparator() + "TrailingStop ";
 		ret += getDirection() ? "Up: StopLoss=" : "Down: StopLoss=";
 		ret += stopLoss;
-		ret += ";AF=";
-		ret += AF;
+		ret += ";AFstep=" + AFstep;
+		ret += ";AFmax=" + AFmax;
+		ret += ";AF=" + AF;
+		if (direction) {
+			ret += ";highestEver=" + highestEver;
+		} else {
+			ret += ";lowestEver=" + lowestEver;
+		}
 		return ret;
 	}
 }

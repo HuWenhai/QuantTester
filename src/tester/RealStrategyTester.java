@@ -52,7 +52,6 @@ public class RealStrategyTester extends AbstractStrategyTester {
 		}
 		
 		for (int i = 0; i < 12; i++) {
-			strategies[i].setMonth(i);
 			BarSeries bar_series = datasource.getBarSeries(i + 1, time_frame);
 			if (bar_series != null) {
 				strategies[i].setBarSeries(bar_series);
