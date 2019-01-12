@@ -15,6 +15,26 @@ public class Center {
 		this.trends = trends;
 	}
 
+	public static Center search(Trend ...trends) {
+		if (trends.length < 4) {
+			return null;
+		}
+		boolean direction = trends[0].direction();
+
+		float a = trends[1].startValue();
+		float b = trends[2].startValue();
+		float c = trends[3].startValue();
+		float d = trends[3].endValue();
+
+		float hi = direction ? Math.min(a, c) : Math.min(b, d);
+		float lo = direction ? Math.max(b, d) : Math.max(a, c);
+		if (hi > lo) {
+			return new Center(lo, hi, new Trend[] {trends[1], trends[2], trends[3]});
+		} else {
+			return null;
+		}
+	}
+
 	public int getStartIndex() {
 		return trends[0].startIndex();
 	}

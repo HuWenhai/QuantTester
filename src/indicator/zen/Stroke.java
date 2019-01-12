@@ -2,6 +2,8 @@ package indicator.zen;
 
 import java.util.List;
 
+import helper.MathHelper;
+
 public class Stroke implements Trend {
 	public final Fractal startFractal;
 	public final Fractal endFractal;
@@ -13,6 +15,13 @@ public class Stroke implements Trend {
 		this.endFractal = endFractal;
 		this.maxValue = maxValue;
 		this.minValue = minValue;
+	}
+
+	public Stroke(Fractal startFractal, Fractal endFractal) {
+		this.startFractal = startFractal;
+		this.endFractal = endFractal;
+		this.maxValue = MathHelper.Max(startFractal.peakValue, endFractal.peakValue);
+		this.minValue = MathHelper.Min(startFractal.peakValue, endFractal.peakValue);
 	}
 
 	@Override
