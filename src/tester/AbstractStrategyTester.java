@@ -80,7 +80,6 @@ public abstract class AbstractStrategyTester implements Cloneable {
 	public void saveActionDetail() {
 		if (actionDetail != null) {
 			actionDetail.strategyName = strategyName;
-			actionDetail.instrument = instrument;
 			actionDetail.timeFrame = time_frame;
 			actionDetail.datasource = "KT";
 			int[] Time = datasource.getBarSeries(0, TIME_FRAME.DAY).times;
@@ -92,15 +91,15 @@ public abstract class AbstractStrategyTester implements Cloneable {
 			String testEndDate = DateTimeHelper.Long2Ldt(actionDetail.testEndTime).format(DateTimeFormatter.BASIC_ISO_DATE);
 			String now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
 			String tableName = strategyName + "_" + instrument + "_" + time_frame + "_" + testStartDate + "_" + testEndDate + "_" + now;
-			Connection conn = MySQLHelper.getConnection("backtest");
+			Connection conn = MySQLHelper.getConnection("tradelog");
 			if (conn != null) {
 	            try (Statement stmt = conn.createStatement()){
-	            	stmt.executeUpdate("CREATE TABLE " + tableName + " (month INT NULL, time INT NULL, price FLOAT NULL, volume INT NULL, direction INT NULL, opencloseflag INT NULL)");
-					int len = actionDetail.actionMonths.size();
+	            	stmt.executeUpdate("CREATE TABLE " + tableName + " (time BIGINT NULL, instrument VARCHAR(45) NULL, price FLOAT NULL, volume INT NULL, direction BOOLEAN NULL, opencloseflag BOOLEAN NULL)");
+					int len = actionDetail.actionTimes.size();
 					for (int i = 0; i < len; i++) {
-						stmt.executeUpdate("INSERT INTO " + tableName + " (month, time, price, volume, direction, opencloseflag) VALUES (" + 
-						actionDetail.actionMonths.get(i) + ", " + actionDetail.actionTimes.get(i) + ", " + actionDetail.prices.get(i) + ", " + 
-						actionDetail.volumes.get(i) + ", " + (actionDetail.directions.get(i) ? 1 : 0) + ", " + (actionDetail.openCloseFlags.get(i) ? 1 : 0) + ")");
+						stmt.executeUpdate("INSERT INTO " + tableName + " (time, instrument, price, volume, direction, opencloseflag) VALUES (" + 
+						actionDetail.actionTimes.get(i) + ", \"" + actionDetail.actionInstruments.get(i) + "\", " + actionDetail.prices.get(i) + ", " + 
+						actionDetail.volumes.get(i) + ", " + actionDetail.directions.get(i) + ", " + actionDetail.openCloseFlags.get(i) + ")");
 					}
 				} catch (SQLException e) {
 					e.printStackTrace();

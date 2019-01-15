@@ -11,8 +11,8 @@ public class IdealTrader implements ITradeable {
 
 	protected boolean saveDetail;
 	protected ActionDetail actionDetail = null;
-	protected int currentMonth = -1;
-	protected int currentTime = -1;
+	protected long currentTime = -1;
+	protected String currentInstrumentId;
 
 	public IdealTrader(Portfolio portfolio, boolean saveDetail, float vol_unit) {
 		this.portfolio = portfolio;
@@ -27,12 +27,11 @@ public class IdealTrader implements ITradeable {
 		this(portfolio, saveDetail, 1.0f);
 	}
 
-	public void setMonth(int month) {
-		// FIXME
-		this.currentMonth = month + 1;
+	public void setInstrumentId(String instrumentId) {
+		this.currentInstrumentId = instrumentId;
 	}
 
-	public void setTime(int time) {
+	public void setTime(long time) {
 		this.currentTime = time;
 	}
 
@@ -75,7 +74,7 @@ public class IdealTrader implements ITradeable {
 		if (portfolio.openLong(price, vol_num * vol_unit)) {
 			position += vol_num;
 			if (saveDetail) {
-				actionDetail.append(currentMonth, currentTime, price, (int) (vol_num * vol_unit), true, true);
+				actionDetail.append(currentTime, currentInstrumentId, price, (int) (vol_num * vol_unit), true, true);
 			}
 		}
 	}
@@ -84,7 +83,7 @@ public class IdealTrader implements ITradeable {
 		if (portfolio.openShort(price, vol_num * vol_unit)) {
 			position -= vol_num;
 			if (saveDetail) {
-				actionDetail.append(currentMonth, currentTime, price, (int) (vol_num * vol_unit), false, true);
+				actionDetail.append(currentTime, currentInstrumentId, price, (int) (vol_num * vol_unit), false, true);
 			}
 		}
 	}
@@ -93,7 +92,7 @@ public class IdealTrader implements ITradeable {
 		if (portfolio.closeLong(price, vol_num * vol_unit)) {
 			position -= vol_num;
 			if (saveDetail) {
-				actionDetail.append(currentMonth, currentTime, price, (int) (vol_num * vol_unit), false, false);
+				actionDetail.append(currentTime, currentInstrumentId, price, (int) (vol_num * vol_unit), false, false);
 			}
 		}
 	}
@@ -102,7 +101,7 @@ public class IdealTrader implements ITradeable {
 		if (portfolio.closeShort(price, vol_num * vol_unit)) {
 			position += vol_num;
 			if (saveDetail) {
-				actionDetail.append(currentMonth, currentTime, price, (int) (vol_num * vol_unit), true, false);
+				actionDetail.append(currentTime, currentInstrumentId, price, (int) (vol_num * vol_unit), true, false);
 			}
 		}
 	}

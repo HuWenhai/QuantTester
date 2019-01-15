@@ -109,7 +109,7 @@ public class RealStrategyTester extends AbstractStrategyTester {
 			if (current_trading_month_id != main_month_id) {
 				if (portfolio.hasNoPosition()) {
 					current_trading_month_id = main_month_id;
-					controlled_trader.setMonth(current_trading_month_id);
+					controlled_trader.setInstrumentId(instrument + String.format("19%02d", current_trading_month_id + 1));
 					if (i < c_backword_days + force_switch_counter) {
 						strategies[current_trading_month_id].setIndexByTime(adjusted_daily_open_time[0]);
 					} else {
