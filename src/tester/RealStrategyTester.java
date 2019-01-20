@@ -1,6 +1,7 @@
 package tester;
 
 import java.util.EnumSet;
+import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -146,6 +147,24 @@ public class RealStrategyTester extends AbstractStrategyTester {
 		}
 		actionDetail = controlled_trader.getActionDetail();
 
+		if (recordActionDetail) {
+			saveDots();
+		}
+
 		return daily_balance;
+	}
+
+	protected void saveDots() {
+		additionalDot = new AdditionalDot();
+		for (int i = 0; i < 12; i++) {
+			String instrumentId = instrument + String.format("19%02d", i + 1);
+			Map<Integer, Float> dotMarks = strategies[i].getDotMarks();
+			if (dotMarks == null) {
+				continue;
+			}
+			for (Map.Entry<Integer, Float> kv : dotMarks.entrySet()) {
+				additionalDot.append(kv.getKey(), instrumentId, kv.getValue());
+			}
+		}
 	}
 }

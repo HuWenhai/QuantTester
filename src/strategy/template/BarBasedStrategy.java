@@ -1,5 +1,8 @@
 package strategy.template;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import data.struct.BarSeries;
 import helper.DateTimeHelper;
 import helper.ReflectHelper;
@@ -120,5 +123,16 @@ public abstract class BarBasedStrategy implements IStrategy, Cloneable {
 		boolean condition1 = last_bar_hour < 17 && this_bar_hour > 18;	// 头一天有夜盘
 		boolean condition2 = last_bar_hour > this_bar_hour && last_bar_hour < 17;	// 头一天无夜盘
 		return (condition1 || condition2);
+	}
+
+	private Map<Integer, Float> dotMarks = null;
+	protected void markDot(int idx, float price) {
+		if (dotMarks == null) {
+			dotMarks = new HashMap<>();
+		}
+		dotMarks.put(Time[idx], price);
+	}
+	public Map<Integer, Float> getDotMarks() {
+		return dotMarks;
 	}
 }

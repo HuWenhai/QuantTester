@@ -10,6 +10,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.BiFunction;
 
 import data.IDataSource;
 import data.TIME_FRAME;
@@ -68,6 +69,7 @@ public abstract class AbstractStrategyTester implements Cloneable {
 	protected Performances performances = null;
 	protected boolean recordActionDetail = false;
 	protected ActionDetail actionDetail = null;
+	protected AdditionalDot additionalDot = null;
 
 	public Performances getPerformances() {
 		return performances;
@@ -78,6 +80,7 @@ public abstract class AbstractStrategyTester implements Cloneable {
 	}
 
 	public void saveActionDetail() {
+		String tableName = "";
 		if (actionDetail != null) {
 			actionDetail.strategyName = strategyName;
 			actionDetail.timeFrame = time_frame;
@@ -90,16 +93,58 @@ public abstract class AbstractStrategyTester implements Cloneable {
 			String testStartDate = DateTimeHelper.Long2Ldt(actionDetail.testStartTime).format(DateTimeFormatter.BASIC_ISO_DATE);
 			String testEndDate = DateTimeHelper.Long2Ldt(actionDetail.testEndTime).format(DateTimeFormatter.BASIC_ISO_DATE);
 			String now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
-			String tableName = strategyName + "_" + instrument + "_" + time_frame + "_" + testStartDate + "_" + testEndDate + "_" + now;
+			tableName = strategyName + "_" + instrument + "_" + time_frame + "_" + testStartDate + "_" + testEndDate + "_" + now;
 			Connection conn = MySQLHelper.getConnection("tradelog");
 			if (conn != null) {
 	            try (Statement stmt = conn.createStatement()){
 	            	stmt.executeUpdate("CREATE TABLE " + tableName + " (time BIGINT NULL, instrument VARCHAR(45) NULL, price FLOAT NULL, volume INT NULL, direction BOOLEAN NULL, opencloseflag BOOLEAN NULL)");
 					int len = actionDetail.actionTimes.size();
-					for (int i = 0; i < len; i++) {
-						stmt.executeUpdate("INSERT INTO " + tableName + " (time, instrument, price, volume, direction, opencloseflag) VALUES (" + 
-						actionDetail.actionTimes.get(i) + ", \"" + actionDetail.actionInstruments.get(i) + "\", " + actionDetail.prices.get(i) + ", " + 
-						actionDetail.volumes.get(i) + ", " + actionDetail.directions.get(i) + ", " + actionDetail.openCloseFlags.get(i) + ")");
+					System.out.println(len + " actions");
+					int divider = 32;
+					int round = len / divider;
+					BiFunction<Integer, Integer, String> bindValues = (i, j) -> {
+						int index = i * divider + j;
+						return ("(" + actionDetail.actionTimes.get(index) + ", \"" + actionDetail.actionInstruments.get(index) + "\", " + actionDetail.prices.get(index) + ", " + 
+									actionDetail.volumes.get(index) + ", " + actionDetail.directions.get(index) + ", " + actionDetail.openCloseFlags.get(index) + ")");
+					};
+					for (int i = 0; i <= round; i++) {
+						String sqlStmt = "INSERT INTO " + tableName + " (time, instrument, price, volume, direction, opencloseflag) VALUES ";
+						sqlStmt += bindValues.apply(i, 0);
+						for (int j = 1; (j < divider) && (i * divider + j < len); j++) {
+							sqlStmt += ",";
+							sqlStmt += bindValues.apply(i, j);
+						}
+						stmt.executeUpdate(sqlStmt);
+					}
+				} catch (SQLException e) {
+					e.printStackTrace();
+					System.out.print("MYSQL ERROR:" + e.getMessage());
+				}
+			}
+		}
+
+		if (additionalDot != null) {
+			tableName += "_dots";
+			Connection conn = MySQLHelper.getConnection("tradelog");
+			if (conn != null) {
+	            try (Statement stmt = conn.createStatement()){
+	            	stmt.executeUpdate("CREATE TABLE " + tableName + " (time BIGINT NULL, instrument VARCHAR(45) NULL, price FLOAT NULL)");
+					int len = additionalDot.dotTimes.size();
+					System.out.println(len + " dots");
+					int divider = 32;
+					int round = len / divider;
+					BiFunction<Integer, Integer, String> bindValues = (i, j) -> {
+						int index = i * divider + j;
+						return ("(" + additionalDot.dotTimes.get(index) + ", \"" + additionalDot.instruments.get(index) + "\", " + additionalDot.prices.get(index) + ")");
+					};
+					for (int i = 0; i <= round; i++) {
+						String sqlStmt = "INSERT INTO " + tableName + " (time, instrument, price) VALUES ";
+						sqlStmt += bindValues.apply(i, 0);
+						for (int j = 1; (j < divider) && (i * divider + j < len); j++) {
+							sqlStmt += ",";
+							sqlStmt += bindValues.apply(i, j);
+						}
+						stmt.executeUpdate(sqlStmt);
 					}
 				} catch (SQLException e) {
 					e.printStackTrace();

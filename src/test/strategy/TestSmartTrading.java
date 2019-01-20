@@ -29,7 +29,9 @@ public class TestSmartTrading {
 		AbstractStrategyTester st = new tester.RealStrategyTester(cp.instrument, cp.tf);
 		st.setTestDateRange((int) DateTimeHelper.Ldt2Long(cp.start_date), (int) DateTimeHelper.Ldt2Long(cp.end_date));
 		st.setStrategyParam(SmartTrading.class, pp);
+		st.enableActionDetailRecording();
 		st.evaluate();
+		st.saveActionDetail();
 
 		logger.info(st.getPerformances());
 		st.drawDailyBalance(SmartTrading.class.getSimpleName() + ".png");

@@ -83,6 +83,9 @@ public abstract class ReverseWithTrailingStop extends BarBasedStrategy implement
 
 	@Override
 	public float onOpen() {
+		if (stop != null) {
+			markDot(current_index, stop.stopLoss);
+		}
 		return stateMachine(Open[current_index], false);
 	}
 

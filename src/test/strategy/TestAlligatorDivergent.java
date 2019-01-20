@@ -20,7 +20,7 @@ public class TestAlligatorDivergent {
 				0.02f,		// AFstep
 				0.1999f,	// AFmax
 				10,			// BBPeriod
-				0,			// BBShift
+				2.0f,		// BBDeviation
 				150.0f		// stdDev
 				);
 
