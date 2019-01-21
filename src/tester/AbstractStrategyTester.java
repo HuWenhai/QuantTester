@@ -97,18 +97,19 @@ public abstract class AbstractStrategyTester implements Cloneable {
 			Connection conn = MySQLHelper.getConnection("tradelog");
 			if (conn != null) {
 	            try (Statement stmt = conn.createStatement()){
-	            	stmt.executeUpdate("CREATE TABLE " + tableName + " (time BIGINT NULL, instrument VARCHAR(45) NULL, price FLOAT NULL, volume INT NULL, direction BOOLEAN NULL, opencloseflag BOOLEAN NULL)");
+	            	stmt.executeUpdate("CREATE TABLE " + tableName + " (id INT UNSIGNED NOT NULL AUTO_INCREMENT, time BIGINT NULL, instrument VARCHAR(45) NULL, price FLOAT NULL, volume INT NULL, direction BOOLEAN NULL, opencloseflag BOOLEAN NULL, label INT NULL, note VARCHAR(255) NULL, PRIMARY KEY (id))");
 					int len = actionDetail.actionTimes.size();
 					System.out.println(len + " actions");
 					int divider = 32;
 					int round = len / divider;
 					BiFunction<Integer, Integer, String> bindValues = (i, j) -> {
 						int index = i * divider + j;
-						return ("(" + actionDetail.actionTimes.get(index) + ", \"" + actionDetail.actionInstruments.get(index) + "\", " + actionDetail.prices.get(index) + ", " + 
-									actionDetail.volumes.get(index) + ", " + actionDetail.directions.get(index) + ", " + actionDetail.openCloseFlags.get(index) + ")");
+						return ("(" + actionDetail.actionTimes.get(index) + ", \"" + actionDetail.instrumentIds.get(index) + "\", " + actionDetail.prices.get(index) + ", " + 
+									actionDetail.volumes.get(index) + ", " + actionDetail.directions.get(index) + ", " + actionDetail.openCloseFlags.get(index) + ", " + 
+									actionDetail.labels.get(index) + ")");
 					};
 					for (int i = 0; i <= round; i++) {
-						String sqlStmt = "INSERT INTO " + tableName + " (time, instrument, price, volume, direction, opencloseflag) VALUES ";
+						String sqlStmt = "INSERT INTO " + tableName + " (time, instrument, price, volume, direction, opencloseflag, label) VALUES ";
 						sqlStmt += bindValues.apply(i, 0);
 						for (int j = 1; (j < divider) && (i * divider + j < len); j++) {
 							sqlStmt += ",";

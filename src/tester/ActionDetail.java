@@ -13,21 +13,27 @@ public class ActionDetail {
 	public int testEndTime;
 
 	public List<Long> actionTimes = new ArrayList<>();
-	public List<String> actionInstruments = new ArrayList<>();
+	public List<String> instrumentIds = new ArrayList<>();
 	public List<Float> prices = new ArrayList<>();
 	public List<Integer> volumes = new ArrayList<>();
 	public List<Boolean> directions = new ArrayList<>();
 	public List<Boolean> openCloseFlags = new ArrayList<>();
+	public List<Integer> labels = new ArrayList<>();
 
 	public ActionDetail() {
 	}
 
-	public void append(long actionTime, String actionInstrument, float price, int volume, boolean direction, boolean openCloseFlag) {
+	public void append(long actionTime, String instrumentId, float price, int volume, boolean direction, boolean openCloseFlag, int label) {
 		actionTimes.add(actionTime);
-		actionInstruments.add(actionInstrument);
+		instrumentIds.add(instrumentId);
 		prices.add(price);
 		volumes.add(volume);
 		directions.add(direction);
 		openCloseFlags.add(openCloseFlag);
+		labels.add(label);
+	}
+
+	public void append(long actionTime, String instrumentId, float price, int volume, boolean direction, boolean openCloseFlag) {
+		append(actionTime, instrumentId, price, volume, direction, openCloseFlag, 0);
 	}
 }
