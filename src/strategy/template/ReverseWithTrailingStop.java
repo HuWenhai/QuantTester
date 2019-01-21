@@ -58,7 +58,7 @@ public abstract class ReverseWithTrailingStop extends BarBasedStrategy implement
 				stop = new TrailingStop(true, signal.cancelPrice, AFstep, AFmax);
 				stop.highestEver = High[current_index];
 				state = State.LONG;
-				markDot(current_index, stop.stopLoss);
+				markDot(current_index, stop.stopLoss, 8);
 				return ret;
 			} else if (signal != null && price < signal.cancelPrice) {
 				state = State.EMPTY;	// Cancel
@@ -71,7 +71,7 @@ public abstract class ReverseWithTrailingStop extends BarBasedStrategy implement
 				stop = new TrailingStop(false, signal.cancelPrice, AFstep, AFmax);
 				stop.lowestEver = Low[current_index];
 				state = State.SHORT;
-				markDot(current_index, stop.stopLoss);
+				markDot(current_index, stop.stopLoss, 9);
 				return ret;
 			} else if (signal != null && price > signal.cancelPrice) {
 				state = State.EMPTY;	// Cancel
@@ -86,7 +86,7 @@ public abstract class ReverseWithTrailingStop extends BarBasedStrategy implement
 	@Override
 	public float onOpen() {
 		if (stop != null) {
-			markDot(current_index, stop.stopLoss);
+			markDot(current_index, stop.stopLoss, stop.getDirection() ? 8 : 9);
 		}
 		return stateMachine(Open[current_index], false);
 	}

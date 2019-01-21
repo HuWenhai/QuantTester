@@ -148,10 +148,6 @@ public class LimitStrategyTester extends RealStrategyTester {
 		}
 		actionDetail = controlled_trader.getActionDetail();
 
-		if (recordActionDetail) {
-			saveDots();
-		}
-
 		return daily_balance;
 	}
 }

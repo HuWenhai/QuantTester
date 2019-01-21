@@ -129,17 +129,18 @@ public abstract class AbstractStrategyTester implements Cloneable {
 			Connection conn = MySQLHelper.getConnection("tradelog");
 			if (conn != null) {
 	            try (Statement stmt = conn.createStatement()){
-	            	stmt.executeUpdate("CREATE TABLE " + tableName + " (time BIGINT NULL, instrument VARCHAR(45) NULL, price FLOAT NULL)");
+	            	stmt.executeUpdate("CREATE TABLE " + tableName + " (time BIGINT NULL, instrument VARCHAR(45) NULL, price FLOAT NULL, type INT NULL)");
 					int len = additionalDot.dotTimes.size();
 					System.out.println(len + " dots");
 					int divider = 32;
 					int round = len / divider;
 					BiFunction<Integer, Integer, String> bindValues = (i, j) -> {
 						int index = i * divider + j;
-						return ("(" + additionalDot.dotTimes.get(index) + ", \"" + additionalDot.instruments.get(index) + "\", " + additionalDot.prices.get(index) + ")");
+						return ("(" + additionalDot.dotTimes.get(index) + ", \"" + additionalDot.instruments.get(index) + "\", " +
+									additionalDot.prices.get(index) + ", " + additionalDot.types.get(index) + ")");
 					};
 					for (int i = 0; i <= round; i++) {
-						String sqlStmt = "INSERT INTO " + tableName + " (time, instrument, price) VALUES ";
+						String sqlStmt = "INSERT INTO " + tableName + " (time, instrument, price, type) VALUES ";
 						sqlStmt += bindValues.apply(i, 0);
 						for (int j = 1; (j < divider) && (i * divider + j < len); j++) {
 							sqlStmt += ",";
@@ -236,7 +237,8 @@ public abstract class AbstractStrategyTester implements Cloneable {
 	}
 
 	protected abstract float[] Evaluate_p(Portfolio portfolio);
-	
+	protected abstract void saveAdditionalDots();
+
 	private float[] daily_balance = null;
 	
 	public void evaluate() {
@@ -245,7 +247,11 @@ public abstract class AbstractStrategyTester implements Cloneable {
 		portfolio.setMargin_ratio(1.0f); // TODO 建立保证金率数据库,作为默认值
 
 		daily_balance = Evaluate_p(portfolio);
-		
+
+		if (recordActionDetail) {
+			saveAdditionalDots();
+		}
+
 		performances = new DailyPerformances(Arrays.copyOfRange(adjusted_daily_close_time, start_index, end_index + 1), daily_balance);
 		performances.LongTrades = portfolio.long_trades;
 		performances.ShortTrades = portfolio.short_trades;

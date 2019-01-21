@@ -1,5 +1,8 @@
 package tester;
 
+import java.util.AbstractMap;
+import java.util.Map;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -37,7 +40,8 @@ public class SimpleStrategyTester extends AbstractStrategyTester {
 	@Override
 	protected float[] Evaluate_p(Portfolio portfolio) {
 		IdealTrader ideal_trader = new IdealTrader(portfolio, recordActionDetail);
-		
+		ideal_trader.setInstrumentId(instrument + "1999");
+
 		float[] daily_balance = new float[end_index - start_index + 1];
 		strategy.setIndexByTime(adjusted_daily_open_time[start_index]);
 		for (int i = start_index; i <= end_index; i++) {
@@ -48,5 +52,18 @@ public class SimpleStrategyTester extends AbstractStrategyTester {
 		actionDetail = ideal_trader.getActionDetail();
 
 		return daily_balance;
+	}
+
+	@Override
+	protected void saveAdditionalDots() {
+		additionalDot = new AdditionalDot();
+		String instrumentId = instrument + "1999";
+		Map<AbstractMap.SimpleEntry<Integer, Float>, Integer> dotMarks = strategy.getDotMarks();
+		if (dotMarks == null) {
+			return;
+		}
+		for (Map.Entry<AbstractMap.SimpleEntry<Integer, Float>, Integer> kv : dotMarks.entrySet()) {
+			additionalDot.append(kv.getKey().getKey(), instrumentId, kv.getKey().getValue(), kv.getValue());
+		}
 	}
 }

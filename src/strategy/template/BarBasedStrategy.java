@@ -1,5 +1,6 @@
 package strategy.template;
 
+import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -125,14 +126,14 @@ public abstract class BarBasedStrategy implements IStrategy, Cloneable {
 		return (condition1 || condition2);
 	}
 
-	private Map<Integer, Float> dotMarks = null;
-	protected void markDot(int idx, float price) {
+	private Map<AbstractMap.SimpleEntry<Integer, Float>, Integer> dotMarks = null;
+	protected void markDot(int idx, float price, int type) {
 		if (dotMarks == null) {
 			dotMarks = new HashMap<>();
 		}
-		dotMarks.put(Time[idx], price);
+		dotMarks.put(new AbstractMap.SimpleEntry<>(Time[idx], price), type);
 	}
-	public Map<Integer, Float> getDotMarks() {
+	public Map<AbstractMap.SimpleEntry<Integer, Float>, Integer> getDotMarks() {
 		return dotMarks;
 	}
 }
