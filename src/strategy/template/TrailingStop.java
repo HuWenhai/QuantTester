@@ -66,6 +66,20 @@ public class TrailingStop implements PriceTrigger {
 		return stopLoss;
 	}
 
+	public void speedUp() {
+		AF += AFstep;
+		if (AF > AFmax) {
+			AF = AFmax;
+		}
+	}
+
+	public void speedDown() {
+		AF -= AFstep;
+		if (AF < 0.0f) {
+			AF = 0.0f;
+		}
+	}
+
 	@Override
 	public String toString() {
 		String ret = System.lineSeparator() + "TrailingStop ";

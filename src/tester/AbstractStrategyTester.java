@@ -97,7 +97,7 @@ public abstract class AbstractStrategyTester implements Cloneable {
 			Connection conn = MySQLHelper.getConnection("tradelog");
 			if (conn != null) {
 	            try (Statement stmt = conn.createStatement()){
-	            	stmt.executeUpdate("CREATE TABLE " + tableName + " (id INT UNSIGNED NOT NULL AUTO_INCREMENT, time BIGINT NULL, instrument VARCHAR(45) NULL, price FLOAT NULL, volume INT NULL, direction BOOLEAN NULL, opencloseflag BOOLEAN NULL, label INT NULL, note VARCHAR(255) NULL, PRIMARY KEY (id))");
+	            	stmt.executeUpdate("CREATE TABLE " + tableName + " (id INT UNSIGNED NOT NULL AUTO_INCREMENT, time BIGINT NULL, instrument VARCHAR(45) NULL, price FLOAT NULL, volume INT NULL, direction BOOLEAN NULL, opencloseflag BOOLEAN NULL, label INT NULL, note VARCHAR(255) NULL, PRIMARY KEY (id)) character set = utf8");
 					int len = actionDetail.actionTimes.size();
 					System.out.println(len + " actions");
 					int divider = 32;
