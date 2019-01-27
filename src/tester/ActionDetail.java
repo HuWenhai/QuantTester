@@ -9,8 +9,6 @@ public class ActionDetail {
 	public String strategyName;
 	public TIME_FRAME timeFrame;
 	public String datasource;
-	public int testStartTime;
-	public int testEndTime;
 
 	public List<Long> actionTimes = new ArrayList<>();
 	public List<String> instrumentIds = new ArrayList<>();

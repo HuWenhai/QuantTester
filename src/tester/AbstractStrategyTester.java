@@ -85,18 +85,12 @@ public abstract class AbstractStrategyTester implements Cloneable {
 			actionDetail.strategyName = strategyName;
 			actionDetail.timeFrame = time_frame;
 			actionDetail.datasource = "KT";
-			int[] Time = datasource.getBarSeries(0, TIME_FRAME.DAY).times;
-			actionDetail.testStartTime = Time[start_index];
-			actionDetail.testEndTime = Time[end_index];
 
-			// FIXME
-			String testStartDate = DateTimeHelper.Long2Ldt(actionDetail.testStartTime).format(DateTimeFormatter.BASIC_ISO_DATE);
-			String testEndDate = DateTimeHelper.Long2Ldt(actionDetail.testEndTime).format(DateTimeFormatter.BASIC_ISO_DATE);
 			String now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
-			tableName = strategyName + "_" + instrument + "_" + time_frame + "_" + testStartDate + "_" + testEndDate + "_" + now;
+			tableName = strategyName + "_" + instrument + "_" + time_frame + "_" + now;
 			Connection conn = MySQLHelper.getConnection("tradelog");
 			if (conn != null) {
-	            try (Statement stmt = conn.createStatement()){
+	            try (Statement stmt = conn.createStatement()) {
 	            	stmt.executeUpdate("CREATE TABLE " + tableName + " (id INT UNSIGNED NOT NULL AUTO_INCREMENT, time BIGINT NULL, instrument VARCHAR(45) NULL, price FLOAT NULL, volume INT NULL, direction BOOLEAN NULL, opencloseflag BOOLEAN NULL, label INT NULL, note VARCHAR(255) NULL, PRIMARY KEY (id)) character set = utf8");
 					int len = actionDetail.actionTimes.size();
 					System.out.println(len + " actions");
@@ -125,11 +119,10 @@ public abstract class AbstractStrategyTester implements Cloneable {
 		}
 
 		if (additionalDot != null) {
-			tableName += "_dots";
 			Connection conn = MySQLHelper.getConnection("tradelog");
 			if (conn != null) {
-	            try (Statement stmt = conn.createStatement()){
-	            	stmt.executeUpdate("CREATE TABLE " + tableName + " (time BIGINT NULL, instrument VARCHAR(45) NULL, price FLOAT NULL, type INT NULL)");
+	            try (Statement stmt = conn.createStatement()) {
+	            	stmt.executeUpdate("CREATE TABLE " + tableName + "_dots (time BIGINT NULL, instrument VARCHAR(45) NULL, price FLOAT NULL, type INT NULL)");
 					int len = additionalDot.dotTimes.size();
 					System.out.println(len + " dots");
 					int divider = 32;
@@ -140,7 +133,7 @@ public abstract class AbstractStrategyTester implements Cloneable {
 									additionalDot.prices.get(index) + ", " + additionalDot.types.get(index) + ")");
 					};
 					for (int i = 0; i <= round; i++) {
-						String sqlStmt = "INSERT INTO " + tableName + " (time, instrument, price, type) VALUES ";
+						String sqlStmt = "INSERT INTO " + tableName + "_dots (time, instrument, price, type) VALUES ";
 						sqlStmt += bindValues.apply(i, 0);
 						for (int j = 1; (j < divider) && (i * divider + j < len); j++) {
 							sqlStmt += ",";
@@ -153,6 +146,35 @@ public abstract class AbstractStrategyTester implements Cloneable {
 					System.out.print("MYSQL ERROR:" + e.getMessage());
 				}
 			}
+		}
+
+		{
+			Connection conn = MySQLHelper.getConnection("tradelog");
+			if (conn != null) {
+	            try (Statement stmt = conn.createStatement()) {
+	            	stmt.executeUpdate("CREATE TABLE " + tableName + "_balance (time BIGINT NULL, balance FLOAT NULL)");
+					int len = daily_balance.length;
+					System.out.println(len + " days");
+					int divider = 32;
+					int round = len / divider;
+					BiFunction<Integer, Integer, String> bindValues = (i, j) -> {
+						int index = i * divider + j;
+						return ("(" + (adjusted_daily_close_time[start_index + index] - 17 * 3600) + ", " + daily_balance[index] + ")");
+					};
+					for (int i = 0; i <= round; i++) {
+						String sqlStmt = "INSERT INTO " + tableName + "_balance (time, balance) VALUES ";
+						sqlStmt += bindValues.apply(i, 0);
+						for (int j = 1; (j < divider) && (i * divider + j < len); j++) {
+							sqlStmt += ",";
+							sqlStmt += bindValues.apply(i, j);
+						}
+						stmt.executeUpdate(sqlStmt);
+					}
+				} catch (SQLException e) {
+					e.printStackTrace();
+					System.out.print("MYSQL ERROR:" + e.getMessage());
+				}
+			}			
 		}
 	}
 
