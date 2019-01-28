@@ -80,21 +80,19 @@ public abstract class AbstractStrategyTester implements Cloneable {
 	}
 
 	public void saveActionDetail() {
-		String tableName = "";
-		if (actionDetail != null) {
-			actionDetail.strategyName = strategyName;
-			actionDetail.timeFrame = time_frame;
-			actionDetail.datasource = "KT";
+		String now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+		String tableName = strategyName + "_" + instrument + "_" + time_frame + "_" + now;
 
-			String now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
-			tableName = strategyName + "_" + instrument + "_" + time_frame + "_" + now;
-			Connection conn = MySQLHelper.getConnection("tradelog");
-			if (conn != null) {
-	            try (Statement stmt = conn.createStatement()) {
+		Connection conn = MySQLHelper.getConnection("tradelog");
+		if (conn != null) {
+            try (Statement stmt = conn.createStatement()) {
+				final int divider = 32;
+            	// TODO record datasouce, etc...
+
+				if (actionDetail != null) {
 	            	stmt.executeUpdate("CREATE TABLE " + tableName + " (id INT UNSIGNED NOT NULL AUTO_INCREMENT, time BIGINT NULL, instrument VARCHAR(45) NULL, price FLOAT NULL, volume INT NULL, direction BOOLEAN NULL, opencloseflag BOOLEAN NULL, label INT NULL, note VARCHAR(255) NULL, PRIMARY KEY (id)) character set = utf8");
 					int len = actionDetail.actionTimes.size();
 					System.out.println(len + " actions");
-					int divider = 32;
 					int round = len / divider;
 					BiFunction<Integer, Integer, String> bindValues = (i, j) -> {
 						int index = i * divider + j;
@@ -102,7 +100,7 @@ public abstract class AbstractStrategyTester implements Cloneable {
 									actionDetail.volumes.get(index) + ", " + actionDetail.directions.get(index) + ", " + actionDetail.openCloseFlags.get(index) + ", " + 
 									actionDetail.labels.get(index) + ")");
 					};
-					for (int i = 0; i <= round; i++) {
+					for (int i = 0; (i <= round) && (i * divider < len); i++) {
 						String sqlStmt = "INSERT INTO " + tableName + " (time, instrument, price, volume, direction, opencloseflag, label) VALUES ";
 						sqlStmt += bindValues.apply(i, 0);
 						for (int j = 1; (j < divider) && (i * divider + j < len); j++) {
@@ -111,28 +109,19 @@ public abstract class AbstractStrategyTester implements Cloneable {
 						}
 						stmt.executeUpdate(sqlStmt);
 					}
-				} catch (SQLException e) {
-					e.printStackTrace();
-					System.out.print("MYSQL ERROR:" + e.getMessage());
 				}
-			}
-		}
 
-		if (additionalDot != null) {
-			Connection conn = MySQLHelper.getConnection("tradelog");
-			if (conn != null) {
-	            try (Statement stmt = conn.createStatement()) {
+            	if (additionalDot != null) {
 	            	stmt.executeUpdate("CREATE TABLE " + tableName + "_dots (time BIGINT NULL, instrument VARCHAR(45) NULL, price FLOAT NULL, type INT NULL)");
 					int len = additionalDot.dotTimes.size();
 					System.out.println(len + " dots");
-					int divider = 32;
 					int round = len / divider;
 					BiFunction<Integer, Integer, String> bindValues = (i, j) -> {
 						int index = i * divider + j;
 						return ("(" + additionalDot.dotTimes.get(index) + ", \"" + additionalDot.instruments.get(index) + "\", " +
 									additionalDot.prices.get(index) + ", " + additionalDot.types.get(index) + ")");
 					};
-					for (int i = 0; i <= round; i++) {
+					for (int i = 0; (i <= round) && (i * divider < len); i++) {
 						String sqlStmt = "INSERT INTO " + tableName + "_dots (time, instrument, price, type) VALUES ";
 						sqlStmt += bindValues.apply(i, 0);
 						for (int j = 1; (j < divider) && (i * divider + j < len); j++) {
@@ -141,27 +130,18 @@ public abstract class AbstractStrategyTester implements Cloneable {
 						}
 						stmt.executeUpdate(sqlStmt);
 					}
-				} catch (SQLException e) {
-					e.printStackTrace();
-					System.out.print("MYSQL ERROR:" + e.getMessage());
-				}
-			}
-		}
+            	}
 
-		{
-			Connection conn = MySQLHelper.getConnection("tradelog");
-			if (conn != null) {
-	            try (Statement stmt = conn.createStatement()) {
+				{
 	            	stmt.executeUpdate("CREATE TABLE " + tableName + "_balance (time BIGINT NULL, balance FLOAT NULL)");
 					int len = daily_balance.length;
 					System.out.println(len + " days");
-					int divider = 32;
 					int round = len / divider;
 					BiFunction<Integer, Integer, String> bindValues = (i, j) -> {
 						int index = i * divider + j;
 						return ("(" + (adjusted_daily_close_time[start_index + index] - 17 * 3600) + ", " + daily_balance[index] + ")");
 					};
-					for (int i = 0; i <= round; i++) {
+					for (int i = 0; (i <= round) && (i * divider < len); i++) {
 						String sqlStmt = "INSERT INTO " + tableName + "_balance (time, balance) VALUES ";
 						sqlStmt += bindValues.apply(i, 0);
 						for (int j = 1; (j < divider) && (i * divider + j < len); j++) {
@@ -170,11 +150,11 @@ public abstract class AbstractStrategyTester implements Cloneable {
 						}
 						stmt.executeUpdate(sqlStmt);
 					}
-				} catch (SQLException e) {
-					e.printStackTrace();
-					System.out.print("MYSQL ERROR:" + e.getMessage());
 				}
-			}			
+            } catch (SQLException e) {
+				e.printStackTrace();
+				System.out.print("MYSQL ERROR:" + e.getMessage());
+			}
 		}
 	}
 

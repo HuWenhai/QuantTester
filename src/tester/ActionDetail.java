@@ -3,13 +3,7 @@ package tester;
 import java.util.ArrayList;
 import java.util.List;
 
-import data.TIME_FRAME;
-
 public class ActionDetail {
-	public String strategyName;
-	public TIME_FRAME timeFrame;
-	public String datasource;
-
 	public List<Long> actionTimes = new ArrayList<>();
 	public List<String> instrumentIds = new ArrayList<>();
 	public List<Float> prices = new ArrayList<>();
