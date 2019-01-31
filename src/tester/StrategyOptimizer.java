@@ -3,6 +3,7 @@ package tester;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -155,6 +156,9 @@ public class StrategyOptimizer implements Runnable {
 				}
 			}
 		}
+
+		List<Object[]> tempList = Arrays.asList(optimize_param);
+		Collections.shuffle(tempList);
 		return total_num;
 	}
 
