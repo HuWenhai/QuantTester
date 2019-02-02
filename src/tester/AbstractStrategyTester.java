@@ -87,10 +87,26 @@ public abstract class AbstractStrategyTester implements Cloneable {
 		if (conn != null) {
             try (Statement stmt = conn.createStatement()) {
 				final int divider = 32;
-            	// TODO record datasouce, etc...
+				{
+	            	stmt.executeUpdate("CREATE TABLE " + tableName + " (`key` VARCHAR(45) NULL, `value` VARCHAR(255) NULL) character set = utf8");
+	            	BiFunction<String, String, String> insertKV = (key, value) -> {
+	            		String sqlStmt = "INSERT INTO " + tableName + " (`key`, `value`) VALUES ";
+	            		sqlStmt += "(\"" + key + "\", \"" + value + "\")";
+	            		return sqlStmt;
+	            	};
+
+	            	stmt.executeUpdate(insertKV.apply("strategy", strategyName));
+	            	stmt.executeUpdate(insertKV.apply("instrument", instrument));
+	            	stmt.executeUpdate(insertKV.apply("timeframe", time_frame.name()));
+	            	stmt.executeUpdate(insertKV.apply("datasource", "KT"));	// TODO
+	            	stmt.executeUpdate(insertKV.apply("initbalance", String.valueOf(init_cash)));
+	            	stmt.executeUpdate(insertKV.apply("commissionratio", String.valueOf(commission_ratio)));
+	    			stmt.executeUpdate(insertKV.apply("begindate", DateTimeHelper.Long2Ldt(adjusted_daily_close_time[start_index]).toLocalDate().toString()));
+	            	stmt.executeUpdate(insertKV.apply("enddate", DateTimeHelper.Long2Ldt(adjusted_daily_close_time[end_index]).toLocalDate().toString()));
+				}
 
 				if (actionDetail != null) {
-	            	stmt.executeUpdate("CREATE TABLE " + tableName + " (id INT UNSIGNED NOT NULL AUTO_INCREMENT, time BIGINT NULL, instrument VARCHAR(45) NULL, price FLOAT NULL, volume INT NULL, direction BOOLEAN NULL, opencloseflag BOOLEAN NULL, label INT NULL, note VARCHAR(255) NULL, PRIMARY KEY (id)) character set = utf8");
+	            	stmt.executeUpdate("CREATE TABLE " + tableName + "_actions (id INT UNSIGNED NOT NULL AUTO_INCREMENT, time BIGINT NULL, instrument VARCHAR(45) NULL, price FLOAT NULL, volume INT NULL, direction BOOLEAN NULL, opencloseflag BOOLEAN NULL, label INT NULL, note VARCHAR(255) NULL, PRIMARY KEY (id)) character set = utf8");
 					int len = actionDetail.actionTimes.size();
 					System.out.println(len + " actions");
 					int round = len / divider;
@@ -101,7 +117,7 @@ public abstract class AbstractStrategyTester implements Cloneable {
 									actionDetail.labels.get(index) + ")");
 					};
 					for (int i = 0; (i <= round) && (i * divider < len); i++) {
-						String sqlStmt = "INSERT INTO " + tableName + " (time, instrument, price, volume, direction, opencloseflag, label) VALUES ";
+						String sqlStmt = "INSERT INTO " + tableName + "_actions (time, instrument, price, volume, direction, opencloseflag, label) VALUES ";
 						sqlStmt += bindValues.apply(i, 0);
 						for (int j = 1; (j < divider) && (i * divider + j < len); j++) {
 							sqlStmt += ",";
@@ -133,16 +149,17 @@ public abstract class AbstractStrategyTester implements Cloneable {
             	}
 
 				{
-	            	stmt.executeUpdate("CREATE TABLE " + tableName + "_balance (time BIGINT NULL, balance FLOAT NULL)");
+	            	stmt.executeUpdate("CREATE TABLE " + tableName + "_balance (date DATE NULL, balance FLOAT NULL)");
 					int len = daily_balance.length;
 					System.out.println(len + " days");
 					int round = len / divider;
 					BiFunction<Integer, Integer, String> bindValues = (i, j) -> {
 						int index = i * divider + j;
-						return ("(" + (adjusted_daily_close_time[start_index + index] - 17 * 3600) + ", " + daily_balance[index] + ")");
+						String date = DateTimeHelper.Long2Ldt(adjusted_daily_close_time[start_index + index]).toLocalDate().toString();
+						return ("(\"" + date + "\", " + daily_balance[index] + ")");
 					};
 					for (int i = 0; (i <= round) && (i * divider < len); i++) {
-						String sqlStmt = "INSERT INTO " + tableName + "_balance (time, balance) VALUES ";
+						String sqlStmt = "INSERT INTO " + tableName + "_balance (date, balance) VALUES ";
 						sqlStmt += bindValues.apply(i, 0);
 						for (int j = 1; (j < divider) && (i * divider + j < len); j++) {
 							sqlStmt += ",";
