@@ -7,7 +7,6 @@ import data.TIME_FRAME;
 import helper.DateTimeHelper;
 import indicator.APPLIED_PRICE;
 import strategy.Breakthrough2;
-import strategy.BreakthroughBase;
 import test.CommonParam;
 import test.ParamManager;
 import tester.AbstractStrategyTester;
