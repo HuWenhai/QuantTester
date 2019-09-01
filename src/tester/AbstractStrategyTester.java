@@ -86,27 +86,13 @@ public abstract class AbstractStrategyTester implements Cloneable {
 		Connection conn = MySQLHelper.getConnection("tradelog");
 		if (conn != null) {
             try (Statement stmt = conn.createStatement()) {
+            	String actionTableName = "";
+            	String dotTableName = "";
+            	String balanceTableName = tableName + "_balance";
 				final int divider = 32;
-				{
-	            	stmt.executeUpdate("CREATE TABLE " + tableName + " (`key` VARCHAR(45) NULL, `value` VARCHAR(255) NULL) character set = utf8");
-	            	BiFunction<String, String, String> insertKV = (key, value) -> {
-	            		String sqlStmt = "INSERT INTO " + tableName + " (`key`, `value`) VALUES ";
-	            		sqlStmt += "(\"" + key + "\", \"" + value + "\")";
-	            		return sqlStmt;
-	            	};
-
-	            	stmt.executeUpdate(insertKV.apply("strategy", strategyName));
-	            	stmt.executeUpdate(insertKV.apply("instrument", instrument));
-	            	stmt.executeUpdate(insertKV.apply("timeframe", time_frame.name()));
-	            	stmt.executeUpdate(insertKV.apply("datasource", "KT"));	// TODO
-	            	stmt.executeUpdate(insertKV.apply("initbalance", String.valueOf(init_cash)));
-	            	stmt.executeUpdate(insertKV.apply("commissionratio", String.valueOf(commission_ratio)));
-	    			stmt.executeUpdate(insertKV.apply("begindate", DateTimeHelper.Long2Ldt(adjusted_daily_close_time[start_index]).toLocalDate().toString()));
-	            	stmt.executeUpdate(insertKV.apply("enddate", DateTimeHelper.Long2Ldt(adjusted_daily_close_time[end_index]).toLocalDate().toString()));
-				}
-
 				if (actionDetail != null) {
-	            	stmt.executeUpdate("CREATE TABLE " + tableName + "_actions (id INT UNSIGNED NOT NULL AUTO_INCREMENT, time BIGINT NULL, instrument VARCHAR(45) NULL, price FLOAT NULL, volume INT NULL, direction BOOLEAN NULL, opencloseflag BOOLEAN NULL, label INT NULL, note VARCHAR(255) NULL, PRIMARY KEY (id)) character set = utf8");
+					actionTableName = tableName + "_actions";
+	            	stmt.executeUpdate("CREATE TABLE " + actionTableName + " (id INT UNSIGNED NOT NULL AUTO_INCREMENT, time BIGINT NULL, instrument VARCHAR(45) NULL, price FLOAT NULL, volume INT NULL, direction BOOLEAN NULL, opencloseflag BOOLEAN NULL, label INT NULL, note VARCHAR(255) NULL, PRIMARY KEY (id)) character set = utf8");
 					int len = actionDetail.actionTimes.size();
 					System.out.println(len + " actions");
 					int round = len / divider;
@@ -117,7 +103,7 @@ public abstract class AbstractStrategyTester implements Cloneable {
 									actionDetail.labels.get(index) + ")");
 					};
 					for (int i = 0; (i <= round) && (i * divider < len); i++) {
-						String sqlStmt = "INSERT INTO " + tableName + "_actions (time, instrument, price, volume, direction, opencloseflag, label) VALUES ";
+						String sqlStmt = "INSERT INTO " + actionTableName + " (time, instrument, price, volume, direction, opencloseflag, label) VALUES ";
 						sqlStmt += bindValues.apply(i, 0);
 						for (int j = 1; (j < divider) && (i * divider + j < len); j++) {
 							sqlStmt += ",";
@@ -128,7 +114,8 @@ public abstract class AbstractStrategyTester implements Cloneable {
 				}
 
             	if (additionalDot != null) {
-	            	stmt.executeUpdate("CREATE TABLE " + tableName + "_dots (time BIGINT NULL, instrument VARCHAR(45) NULL, price FLOAT NULL, type INT NULL)");
+            		dotTableName = tableName + "_dots";
+	            	stmt.executeUpdate("CREATE TABLE " + dotTableName + " (time BIGINT NULL, instrument VARCHAR(45) NULL, price FLOAT NULL, type INT NULL)");
 					int len = additionalDot.dotTimes.size();
 					System.out.println(len + " dots");
 					int round = len / divider;
@@ -138,7 +125,7 @@ public abstract class AbstractStrategyTester implements Cloneable {
 									additionalDot.prices.get(index) + ", " + additionalDot.types.get(index) + ")");
 					};
 					for (int i = 0; (i <= round) && (i * divider < len); i++) {
-						String sqlStmt = "INSERT INTO " + tableName + "_dots (time, instrument, price, type) VALUES ";
+						String sqlStmt = "INSERT INTO " + dotTableName + " (time, instrument, price, type) VALUES ";
 						sqlStmt += bindValues.apply(i, 0);
 						for (int j = 1; (j < divider) && (i * divider + j < len); j++) {
 							sqlStmt += ",";
@@ -149,7 +136,7 @@ public abstract class AbstractStrategyTester implements Cloneable {
             	}
 
 				{
-	            	stmt.executeUpdate("CREATE TABLE " + tableName + "_balance (date DATE NULL, balance FLOAT NULL)");
+	            	stmt.executeUpdate("CREATE TABLE " + balanceTableName + " (date DATE NULL, balance FLOAT NULL)");
 					int len = daily_balance.length;
 					System.out.println(len + " days");
 					int round = len / divider;
@@ -159,7 +146,7 @@ public abstract class AbstractStrategyTester implements Cloneable {
 						return ("(\"" + date + "\", " + daily_balance[index] + ")");
 					};
 					for (int i = 0; (i <= round) && (i * divider < len); i++) {
-						String sqlStmt = "INSERT INTO " + tableName + "_balance (date, balance) VALUES ";
+						String sqlStmt = "INSERT INTO " + balanceTableName + " (date, balance) VALUES ";
 						sqlStmt += bindValues.apply(i, 0);
 						for (int j = 1; (j < divider) && (i * divider + j < len); j++) {
 							sqlStmt += ",";
@@ -168,6 +155,16 @@ public abstract class AbstractStrategyTester implements Cloneable {
 						stmt.executeUpdate(sqlStmt);
 					}
 				}
+				{
+	                String sqlStmt = "INSERT INTO records (`strategy`, `instrument`, `timeframe`, `datasource`, `initbalance`, `commissionratio`, `startdate`, `stopdate`, `actiontable`, `dottable`, `balancetable`) VALUES (\"" +
+	                strategyName + "\", \"" + instrument + "\", \"" + time_frame.name() + "\", \"KT\", " +
+                    init_cash + ", " + commission_ratio + ", \"" +
+                    DateTimeHelper.Long2Ldt(adjusted_daily_close_time[start_index]).toLocalDate().toString() + "\", \"" +
+	            	DateTimeHelper.Long2Ldt(adjusted_daily_close_time[end_index]).toLocalDate().toString() + "\", \"" +
+	            	actionTableName + "\", \"" + dotTableName + "\", \"" + balanceTableName + "\")";
+	                stmt.executeUpdate(sqlStmt);
+				}
+
             } catch (SQLException e) {
 				e.printStackTrace();
 				System.out.print("MYSQL ERROR:" + e.getMessage());
