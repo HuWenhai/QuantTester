@@ -14,16 +14,17 @@ public class Cache {
 	private static final Map<String, Object> signals = new ConcurrentHashMap<>();
 
 	public static String makeKey(final List<Object> objects) {
-		if (objects.size() < 0) {
+		int size = objects.size();
+		if (size <= 0) {
 			return "";
 		}
 
-		String key = objects.get(0).toString();
-		for (int i = 1; i < objects.size(); i++) {
-			key += "_";
-			key += objects.get(i).toString();
+		StringBuilder key = new StringBuilder(objects.get(0).toString());
+		for (int i = 1; i < size; i++) {
+			key.append("_");
+			key.append(objects.get(i).toString());
 		}
-		return key;
+		return key.toString();
 	}
 
 	public static Object getCachedSignal(Supplier<Object> supplier, String instrument, TIME_FRAME tf, int begin, int end, String name, Object...params) {
