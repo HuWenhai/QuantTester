@@ -103,13 +103,15 @@ public abstract class AbstractStrategyTester implements Cloneable {
 									actionDetail.labels.get(index) + ")");
 					};
 					for (int i = 0; (i <= round) && (i * divider < len); i++) {
-						String sqlStmt = "INSERT INTO " + actionTableName + " (time, instrument, price, volume, direction, opencloseflag, label) VALUES ";
-						sqlStmt += bindValues.apply(i, 0);
+						StringBuilder sqlStmt = new StringBuilder("INSERT INTO ");
+						sqlStmt.append(actionTableName);
+						sqlStmt.append(" (time, instrument, price, volume, direction, opencloseflag, label) VALUES ");
+						sqlStmt.append(bindValues.apply(i, 0));
 						for (int j = 1; (j < divider) && (i * divider + j < len); j++) {
-							sqlStmt += ",";
-							sqlStmt += bindValues.apply(i, j);
+							sqlStmt.append(",");
+							sqlStmt.append(bindValues.apply(i, j));
 						}
-						stmt.executeUpdate(sqlStmt);
+						stmt.executeUpdate(sqlStmt.toString());
 					}
 				}
 
@@ -125,13 +127,15 @@ public abstract class AbstractStrategyTester implements Cloneable {
 									additionalDot.prices.get(index) + ", " + additionalDot.types.get(index) + ")");
 					};
 					for (int i = 0; (i <= round) && (i * divider < len); i++) {
-						String sqlStmt = "INSERT INTO " + dotTableName + " (time, instrument, price, type) VALUES ";
-						sqlStmt += bindValues.apply(i, 0);
+						StringBuilder sqlStmt = new StringBuilder("INSERT INTO ");
+						sqlStmt.append(dotTableName);
+						sqlStmt.append(" (time, instrument, price, type) VALUES ");
+						sqlStmt.append(bindValues.apply(i, 0));
 						for (int j = 1; (j < divider) && (i * divider + j < len); j++) {
-							sqlStmt += ",";
-							sqlStmt += bindValues.apply(i, j);
+							sqlStmt.append(",");
+							sqlStmt.append(bindValues.apply(i, j));
 						}
-						stmt.executeUpdate(sqlStmt);
+						stmt.executeUpdate(sqlStmt.toString());
 					}
             	}
 
@@ -146,13 +150,15 @@ public abstract class AbstractStrategyTester implements Cloneable {
 						return ("(\"" + date + "\", " + daily_balance[index] + ")");
 					};
 					for (int i = 0; (i <= round) && (i * divider < len); i++) {
-						String sqlStmt = "INSERT INTO " + balanceTableName + " (date, balance) VALUES ";
-						sqlStmt += bindValues.apply(i, 0);
+						StringBuilder sqlStmt = new StringBuilder("INSERT INTO ");
+						sqlStmt.append(balanceTableName);
+						sqlStmt.append(" (date, balance) VALUES ");
+						sqlStmt.append(bindValues.apply(i, 0));
 						for (int j = 1; (j < divider) && (i * divider + j < len); j++) {
-							sqlStmt += ",";
-							sqlStmt += bindValues.apply(i, j);
+							sqlStmt.append(",");
+							sqlStmt.append(bindValues.apply(i, j));
 						}
-						stmt.executeUpdate(sqlStmt);
+						stmt.executeUpdate(sqlStmt.toString());
 					}
 				}
 				{
