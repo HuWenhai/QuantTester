@@ -7,13 +7,6 @@ public abstract class ReverseWithTrailingStop extends BarBasedStrategy implement
 	protected EnterSignal signal = null;
 	protected TrailingStop stop = null;
 
-	protected static enum State {
-		EMPTY,
-		WAIT_LONG,
-		WAIT_SHORT,
-		LONG,
-		SHORT,
-	}
 	protected State state = State.EMPTY;
 
 	public ReverseWithTrailingStop(Float AFstep, Float AFmax) {

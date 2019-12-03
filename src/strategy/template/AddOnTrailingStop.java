@@ -160,6 +160,9 @@ public abstract class AddOnTrailingStop extends BarBasedStrategy implements IEve
 
 	@Override
 	public float onOpen() {
+		if (stop != null) {
+			markDot(current_index, stop.stopLoss, stop.getDirection() ? 8 : 9);
+		}
 		return checkPrice(Open[current_index], false);
 	}
 
