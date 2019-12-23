@@ -42,7 +42,7 @@ class StrokeDecomposer {
 				if (high[i + 1] < (low[i] * (1 - gapRatio))) {
 					if (high[i + 2] < low[i] && high[i + 3] < low[i]) {
 						return true;
-					}				
+					}
 				}
 			}
 		}
@@ -101,37 +101,35 @@ class StrokeDecomposer {
 	}
 
 	public List<Stroke> calculate(List<HighLowLine> adjustedKLines, List<Fractal> fractalList, float[] high, float[] low) {
-		int lastEndPoint = 0;
 		strokeList = new ArrayList<>();
 		confirmList = new ArrayList<>();
 
-		final int adjustedKLineLen = adjustedKLines.size();
-		if (adjustedKLineLen < 4) {
-			return null;
+		ListIterator<HighLowLine> iterator = adjustedKLines.listIterator();
+		HighLowLine lastConfirmedEP = null;
+		HighLowLine confirmedEP = null;
+		while (iterator.hasNext()) {
+			confirmedEP = iterator.next();
+			if (confirmedEP.fractal != 0) {
+				break;
+			}
+		}
+		if (confirmedEP == null || confirmedEP.fractal == 0) {
+			return strokeList;
 		}
 
-		ListIterator<HighLowLine> iterator = adjustedKLines.listIterator();
-		HighLowLine confirmedEP = iterator.next();
-		while (confirmedEP.fractal == 0 && iterator.hasNext()) {
-			confirmedEP = iterator.next();
-		}
 		HighLowLine unconfirmedEP = null;
 		int unconfirmedIndex = 0;
 		while (iterator.hasNext()) {
 			unconfirmedEP = iterator.next();
-			while(unconfirmedEP.fractal == 0 && iterator.hasNext()) {
-				unconfirmedEP = iterator.next();
-			}
-			unconfirmedIndex = iterator.nextIndex();
-			if (confirmedEP.fractal == unconfirmedEP.fractal) {
-				confirmedEP = unconfirmedEP;
-				continue;
-			} else {
+			if (-unconfirmedEP.fractal == confirmedEP.fractal) {
+				unconfirmedIndex = iterator.nextIndex();
 				break;
 			}
 		}
+		if (unconfirmedEP == null || -unconfirmedEP.fractal != confirmedEP.fractal) {
+			return strokeList;
+		}
 
-		lastEndPoint = confirmedEP.originalOrdinal;
 		HighLowLine firstFailFractal = null;
 		boolean allowSecondary = false;
 		while (iterator.hasNext()) {
@@ -141,8 +139,7 @@ class StrokeDecomposer {
 			}
 			if (nextFractal.fractal == 0) {
 				// Last HighLowLine but not fractal
-				Fractal lastFractal = getFractalbyIndex(fractalList, lastEndPoint);
-				lastEndPoint = confirmedEP.originalOrdinal;
+				Fractal lastFractal = getFractalbyIndex(fractalList, confirmedEP.originalOrdinal);
 				Fractal thisFractal = getFractalbyIndex(fractalList, unconfirmedEP.originalOrdinal);
 				strokeList.add(createStrokeFromFractal(lastFractal, thisFractal, high, low));
 				confirmList.add(getFractalbyIndex(fractalList, unconfirmedEP.originalOrdinal));
@@ -172,11 +169,11 @@ class StrokeDecomposer {
 							 (nextFractal.fractal == -1 && nextFractal.low < firstFailFractal.low)));
 					boolean secondMatch = (firstFailFractal != null && allowSecondary && checkBackward(unconfirmedEP, firstFailFractal, nextFractal, high, low));
 					if (firstMatch || betterMatch || secondMatch) {
+						lastConfirmedEP = confirmedEP;
 						confirmedEP = unconfirmedEP;
 						unconfirmedEP = nextFractal;
 						unconfirmedIndex = nextFractalIndex;
-						Fractal lastFractal = getFractalbyIndex(fractalList, lastEndPoint);
-						lastEndPoint = confirmedEP.originalOrdinal;
+						Fractal lastFractal = getFractalbyIndex(fractalList, lastConfirmedEP.originalOrdinal);
 						Fractal thisFractal = getFractalbyIndex(fractalList, confirmedEP.originalOrdinal); 
 						strokeList.add(createStrokeFromFractal(lastFractal, thisFractal, high, low));
 						confirmList.add(getFractalbyIndex(fractalList, nextFractal.originalOrdinal));
