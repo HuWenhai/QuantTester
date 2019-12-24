@@ -35,7 +35,7 @@ public class SameLevelDecomposition implements IIndicator {
 		}
 
 		StrokeDecomposer std = new StrokeDecomposer(strictStroke, gapThreshold);
-		strokeList = std.calculate(fractalFinder.adjustedKLines, fractalList, high, low);
+		strokeList = std.calculate(fractalFinder.adjustedKLines, fractalList, open, high, low, close);
 		strokeConfirmList = new ArrayList<>();
 		int strokeListSize = strokeList.size();
 		for (int i = 0; i < strokeListSize; i++) {

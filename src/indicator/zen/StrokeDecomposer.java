@@ -9,15 +9,13 @@ import indicator.zen.FractalFinder.HighLowLine;
 
 class StrokeDecomposer {
 
-	private final boolean strict;
 	private final int minimumBarsForStrokeConfirm;
 	private final float gapRatio;
 	public List<Stroke> strokeList = null;
 	public List<Fractal> confirmList = null;
 
 	public StrokeDecomposer(boolean strict, float gapRatio) {
-		this.strict = strict;
-		this.minimumBarsForStrokeConfirm = this.strict ? 5 : 4;
+		this.minimumBarsForStrokeConfirm = strict ? 5 : 4;
 		this.gapRatio = gapRatio;
 	}
 
@@ -25,7 +23,7 @@ class StrokeDecomposer {
 		this(true, 1.0f);
 	}
 
-	private boolean checkGap(int endFractal, int start, int end, float[] high, float[] low) {
+	private boolean checkGap(int endFractal, int start, int end, float[] open, float[] high, float[] low, float[] close) {
 		final int rates_total = high.length;
 		if (end + 2 >= rates_total) {
 			return false;
@@ -33,14 +31,14 @@ class StrokeDecomposer {
 
 		for (int i = start; i < end; i++) {
 			if (endFractal == 1) {
-				if (low[i + 1] > (high[i] * (1 + gapRatio))) {
-					if (low[i + 2] > high[i] && low[i + 3] > high[i]) {
+				if (open[i + 1] > (close[i] * (1 + gapRatio))) {
+					if (low[i + 2] > close[i] && low[i + 3] > close[i]) {
 						return true;
 					}
 				}
 			} else if (endFractal == -1) {
-				if (high[i + 1] < (low[i] * (1 - gapRatio))) {
-					if (high[i + 2] < low[i] && high[i + 3] < low[i]) {
+				if (open[i + 1] < (close[i] * (1 - gapRatio))) {
+					if (high[i + 2] < close[i] && high[i + 3] < close[i]) {
 						return true;
 					}
 				}
@@ -100,7 +98,7 @@ class StrokeDecomposer {
 		return new Stroke(startFractal, endFractal, (float)maxValue, (float)minValue);
 	}
 
-	public List<Stroke> calculate(List<HighLowLine> adjustedKLines, List<Fractal> fractalList, float[] high, float[] low) {
+	public List<Stroke> calculate(List<HighLowLine> adjustedKLines, List<Fractal> fractalList, float[] open, float[] high, float[] low, float[] close) {
 		strokeList = new ArrayList<>();
 		confirmList = new ArrayList<>();
 
@@ -160,7 +158,7 @@ class StrokeDecomposer {
 				boolean haveEnoughKLines = (kLineCount >= minimumBarsForStrokeConfirm);
 				boolean gapStroke = false;
 				if (!haveEnoughKLines) {
-					gapStroke = checkGap(nextFractal.fractal, unconfirmedEP.originalOrdinal, nextFractal.originalOrdinal, high, low);
+					gapStroke = checkGap(nextFractal.fractal, unconfirmedEP.originalOrdinal, nextFractal.originalOrdinal, open, high, low, close);
 				}
 				if (haveEnoughKLines || gapStroke) {
 					boolean firstMatch = (firstFailFractal == null);
@@ -180,12 +178,14 @@ class StrokeDecomposer {
 						firstFailFractal = null;
 						allowSecondary = false;
 					}
-				} else if (firstFailFractal == null && kLineCount == minimumBarsForStrokeConfirm - 1 && strict) {
-					firstFailFractal = nextFractal;
-					allowSecondary = true;
-				} else if (firstFailFractal == null && kLineCount < minimumBarsForStrokeConfirm - 1 && strict) {
-					firstFailFractal = nextFractal;
-					allowSecondary = false;
+				} else {
+					allowSecondary = kLineCount == minimumBarsForStrokeConfirm - 1;
+					if (firstFailFractal == null
+							|| (firstFailFractal.fractal == 1 && nextFractal.high > firstFailFractal.high)
+							|| (firstFailFractal.fractal == -1 && nextFractal.low < firstFailFractal.low))
+					{
+						firstFailFractal = nextFractal;
+					}
 				}
 			}
 		}
